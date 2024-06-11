@@ -5,6 +5,8 @@
 package object;
 
 import appgame.GamePanel;
+import entity.Entity;
+
 import java.io.IOException;
 import javax.imageio.ImageIO;
 
@@ -12,24 +14,16 @@ import javax.imageio.ImageIO;
  *
  * @author Admin
  */
-public class OBJ_Heart extends SuperObject {
+public class OBJ_Heart extends Entity {
 
     GamePanel gp;
 
     public OBJ_Heart(GamePanel gp) {
+        super(gp);
         name = "Heart";
-        try {
-            image = ImageIO.read(getClass().getResourceAsStream("/res/objects/full_heart.png"));
-            image2 = ImageIO.read(getClass().getResourceAsStream("/res/objects/half_heart.png"));
-            image3 = ImageIO.read(getClass().getResourceAsStream("/res/objects/blank_heart.png"));
-
-            image = uTool.scaleImage(image, gp.tileSize, gp.tileSize);
-            image2 = uTool.scaleImage(image2, gp.tileSize, gp.tileSize);
-            image3 = uTool.scaleImage(image3, gp.tileSize, gp.tileSize);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        image = setup("/res/objects/full_heart");
+        image2 = setup("/res/objects/half_heart");
+        image3 = setup("/res/objects/blank_heart");
     }
 
 }

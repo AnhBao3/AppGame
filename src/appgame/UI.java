@@ -4,22 +4,20 @@
  */
 package appgame;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics2D;
+import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.text.DecimalFormat;
+import java.io.IOException;
+import java.io.InputStream;
+
+import entity.Entity;
 import object.OBJ_Heart;
-import object.OBJ_Key;
-import object.SuperObject;
 
 /**
  *
  * @author Admin
  */
 public class UI {
-
+    Font fontPixel;
     GamePanel gp;
     Graphics2D g2;
     Font arial_40, arial_80B;
@@ -35,11 +33,18 @@ public class UI {
 
     public UI(GamePanel gp) {
         this.gp = gp;
-        arial_40 = new Font("Arial", Font.PLAIN, 40);
-        arial_80B = new Font("Arial", Font.BOLD, 80);
+        //arial_40 = new Font("Arial", Font.PLAIN, 40);
+        //arial_80B = new Font("Arial", Font.BOLD, 80);
 
-        //
-        SuperObject heart = new OBJ_Heart(gp);
+        InputStream is = getClass().getResourceAsStream("/res/font/FVF Fernando 08.ttf");
+        try {
+            fontPixel = Font.createFont(Font.TRUETYPE_FONT, is);
+        } catch (FontFormatException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        Entity heart = new OBJ_Heart(gp);
         heart_full = heart.image;
         heart_half = heart.image2;
         heart_blank = heart.image3;
@@ -48,7 +53,7 @@ public class UI {
     public void draw(Graphics2D g2) {
         this.g2 = g2;
 
-        g2.setFont(arial_40);
+        g2.setFont(fontPixel);
         g2.setColor(Color.white);
         //titleState
         if (gp.gameState == gp.titleState) {
@@ -97,7 +102,7 @@ public class UI {
         int width = gp.screenWidth - (gp.tileSize * 4);
         int height = gp.tileSize * 4;
         drawSubWindow(x, y, width, height);
-        g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 32F));
+        g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 25F));
         x += gp.tileSize;
         y += gp.tileSize;
 
@@ -125,7 +130,7 @@ public class UI {
             g2.setColor(new Color(52, 152, 219)); //rgb(52, 152, 219)
             g2.fillRect(0, 0, gp.screenWidth, gp.screenHeight);
             //Game title 
-            g2.setFont(g2.getFont().deriveFont(Font.BOLD, 50F));
+            g2.setFont(g2.getFont().deriveFont(Font.BOLD, 40F));
             String text = "Đi Tìm Kho Báu Của TML";
             int x = getXforCenteredText(text);
             int y = gp.tileSize * 3;
@@ -140,7 +145,7 @@ public class UI {
             y += gp.tileSize * 2;
             g2.drawImage(gp.player.down1, x, y, gp.tileSize * 2, gp.tileSize * 2, null);
 
-            g2.setFont(g2.getFont().deriveFont(Font.BOLD, 35F));
+            g2.setFont(g2.getFont().deriveFont(Font.BOLD, 30F));
             text = "Tạo mới";
             x = getXforCenteredText(text);
             y += gp.tileSize * 3;

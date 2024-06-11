@@ -10,10 +10,11 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import javax.swing.JPanel;
-import object.SuperObject;
+
 import tile.TileManager;
 
 /**
@@ -55,8 +56,9 @@ public class GamePanel extends JPanel implements Runnable {
     //Thực thể và NPC
     public Player player = new Player(this, keyH);
     //Hiển thị 10 đối tượng cùng 1 lúc, VD: khi nhận objA thì objA sẽ mất khỏi màn hình để có thể thêm 1 obj.. vào ô trống
-    public SuperObject obj[] = new SuperObject[10];
+    public Entity obj[] = new Entity[10];
     public Entity npc[] = new Entity[10];
+    ArrayList<Entity> entiList = new ArrayList<>();//thực thể lớn
 
     //Trạng thái game có thể là đang ở menu, có thể là đang ở trong game
     public int gameState;
@@ -161,31 +163,39 @@ public class GamePanel extends JPanel implements Runnable {
         if (gameState == titleState) {
                 ui.draw(g2);
         } else {
+            //tile
             tileM.draw(g2);
-            //người chơi
-            player.draw(g2);
+
+            //add vaào danh sach lơn
+            entiList.add(player);
+            for(int i =0;i<npc.length;i++){
+                if(npc[i]!=null){
+                    entiList.add(npc[i]);
+                }
+            }
+            for(int i =0;i<obj.length;i++){
+                if(obj[i]!=null){
+                    entiList.add(obj[i]);
+                }
+            }
+            Collections.sort(entiList,new Comparator<Entity>() {
+                @Override
+                public int compare(Entity e1, Entity e2) {
+                    int result = Integer.compare(e1.worldY,e2.worldY);
+
+                    return 0;
+                }
+            });
+            //draw entity
+            for(int i =0;i<entiList.size();i++){
+                entiList.get(i).draw(g2);
+            }
+            //empty entity list
+            for(int i =0;i<entiList.size();i++){
+                entiList.remove(i);
+            }
+            //UI
             ui.draw(g2);
-            //đối tượng
-            for (int i = 0; i < obj.length; i++) {
-                if (obj[i] != null) {
-                    obj[i].draw(g2, this);
-                }
-            }
-            //NPC
-            for (int i = 0; i < npc.length; i++) {
-                if (npc[i] != null) {
-                    npc[i].draw(g2);
-                }
-            }
-            g2.dispose();
-            // hiển thị màng hình
-            //DEBUG
-            if (keyH.checkDrawTime == true) {
-                long drawEnd = System.nanoTime();
-                long passed = drawEnd - drawStart;
-                g2.setColor(Color.white);
-                System.out.println("Drawtime: " + passed);
-            }
 
         }
 
