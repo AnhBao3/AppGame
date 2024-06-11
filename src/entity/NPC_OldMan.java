@@ -18,7 +18,7 @@ public class NPC_OldMan extends Entity {
         direction = "down";
         speed = 1;// tốc độ    
         getImage();
-        setDialogue();
+        setDialogue(); //test
     }
 
     public void getImage() {
