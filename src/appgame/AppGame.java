@@ -12,6 +12,7 @@ import javax.swing.JFrame;
  */
 public class AppGame {
     public static void main(String[] args) {
+            //LOZ GIT HUB
             JFrame window = new JFrame();
             window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             window.setResizable(false);
