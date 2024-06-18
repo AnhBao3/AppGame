@@ -58,14 +58,16 @@ public class GamePanel extends JPanel implements Runnable {
     //Hiển thị 10 đối tượng cùng 1 lúc, VD: khi nhận objA thì objA sẽ mất khỏi màn hình để có thể thêm 1 obj.. vào ô trống
     public Entity obj[] = new Entity[10];
     public Entity npc[] = new Entity[10];
+    public Entity monster[] = new Entity[20];
     ArrayList<Entity> entiList = new ArrayList<>();//thực thể lớn
 
     //Trạng thái game có thể là đang ở menu, có thể là đang ở trong game
     public int gameState;
+    public final int titleState = 0;
     public final int playState = 1;
     public final int pauseState = 2;
     public final int dialogueState = 3;
-    public final int titleState = 0;
+    public final int characterState = 4;
 
     public GamePanel() {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
@@ -145,6 +147,16 @@ public class GamePanel extends JPanel implements Runnable {
                     npc[i].update();
                 }
             }
+            for(int i=0;i<monster.length;i++) {
+                if(monster[i] != null) {
+                    if(monster[i].alive ==true && monster[i].dying == false){
+                        monster[i].update();
+                    }
+                    if(monster[i].alive ==false){
+                        monster[i] = null;
+                    }
+                }
+            }
         }
         if (gameState == pauseState) {
             // chưa làm gì
@@ -154,12 +166,6 @@ public class GamePanel extends JPanel implements Runnable {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
-        //DEBUG
-        long drawStart = 0;
-        if (keyH.checkDrawTime == true) {
-            drawStart = System.nanoTime();
-        }
-        //hình nền
         if (gameState == titleState) {
                 ui.draw(g2);
         } else {
@@ -178,6 +184,12 @@ public class GamePanel extends JPanel implements Runnable {
                     entiList.add(obj[i]);
                 }
             }
+
+            for(int i =0;i<monster.length;i++){
+                if(monster[i]!=null){
+                    entiList.add(monster[i]);
+                }
+            }
             Collections.sort(entiList,new Comparator<Entity>() {
                 @Override
                 public int compare(Entity e1, Entity e2) {
@@ -191,9 +203,9 @@ public class GamePanel extends JPanel implements Runnable {
                 entiList.get(i).draw(g2);
             }
             //empty entity list
-            for(int i =0;i<entiList.size();i++){
-                entiList.remove(i);
-            }
+            entiList.clear();
+
+            player.draw(g2);
             //UI
             ui.draw(g2);
 
@@ -205,6 +217,7 @@ public class GamePanel extends JPanel implements Runnable {
         //set ob
         aSetter.setObject();
         aSetter.setNPC();
+        aSetter.setMonster();
         //set nhạc nền
         gameState = titleState;
     }

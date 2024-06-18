@@ -81,6 +81,7 @@ public class EventHandler {
     public void heallingPool(int gameState){
         if(gp.keyH.enterPressed == true){
             gp.gameState = gameState;
+            gp.player.attackCanceled = true;
             gp.ui.currentDialogue = "U?ng n??c";
             gp.player.life =gp.player.maxLife;
         }

@@ -6,8 +6,8 @@ package entity;
 
 import appgame.GamePanel;
 import appgame.UtilityTool;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
+
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import javax.imageio.ImageIO;
@@ -16,45 +16,70 @@ import javax.imageio.ImageIO;
  *
  * @author Admin
  */
-public class Entity {
+public abstract class Entity {
 
     GamePanel gp;
     public int worldX, worldY;
-    public int speed;
     public BufferedImage up1, up2, down1, down2, left1, left2, right1, right2;
+    public BufferedImage attackUp1, attackUp2, attackDown1, attackDown2, attackLeft1, attackLeft2, attackRight1, attackRight2;
     public String direction = "down";
     public int spriteCounter = 0;
     public int spriteNum = 1;
     public Rectangle solidArea = new Rectangle(0, 0, 48, 49);
+    public Rectangle attackArea = new Rectangle(0,0,0,0);
     public int solidAreaDefaultX, solidAreaDefaultY;
     public boolean collisionOn = false;
     public int actionLockCounter = 0;
     String dialogues[] = new String[20]; //số lượng dialogue có thể có
     int dialogueIndex = 0;
     public BufferedImage image,image2,image3;
-    public String name;
+    public boolean invincible = false;
+    public int invincibleCounter =0;
     public boolean collision = false;
-    
+    boolean attacking = false;
+    public boolean alive = true;
+    public boolean dying = false;
+    int dyingCounter = 0;
+    boolean hpBarOn = false;
+    int hpBarCounter;
+
     //trạng thái người chơi
     public int maxLife;
     public int life;
+    public int type; //0 là người 1 = npc 2 là người
+    public int speed;
+    public String name;
+    public int level;
+    public int strength;
+    public int dexterity;
+    public int attack;
+    public int defense;
+    public int exp;
+    public int nextLevelExp;
+    public int coin;
+    public Entity currentWeapon;
+    public Entity currenSheld;
+
+    //thuoc tinh cua do vat
+    public int attackValue;
+    public int defenderValue;
 
     public Entity(GamePanel gp) {
         this.gp = gp;
     }
 
-    public BufferedImage setup(String imagePath) {
+    public BufferedImage setup(String imagePath,int width,int height) {
         UtilityTool uTool = new UtilityTool();
         BufferedImage image = null;
         try {
             image = ImageIO.read(getClass().getResourceAsStream(imagePath + ".png"));
-            image = uTool.scaleImage(image, gp.tileSize, gp.tileSize);
+            image = uTool.scaleImage(image, width, height);
         } catch (IOException e) {
             e.printStackTrace();
         }
         return image;
     }
-
+    public void damageReaction(){}
     public void draw(Graphics2D g2) {
         BufferedImage image = null;
         int screenX = worldX - gp.player.worldX + gp.player.screenX;
@@ -66,42 +91,71 @@ public class Entity {
                 && worldY - gp.tileSize < gp.player.worldY + gp.player.screenY) {
             switch (direction) {
                 case "up":
-                    if (spriteNum == 1) {
-                        image = up1;
-                    }
-                    if (spriteNum == 2) {
-                        image = up2;
-                    }
+                    if (spriteNum == 1) {image = up1;}
+                    if (spriteNum == 2) {image = up2;}
                     break;
                 case "down":
-                    if (spriteNum == 1) {
-                        image = down1;
-                    }
-                    if (spriteNum == 2) {
-                        image = down2;
-                    }
+                    if (spriteNum == 1) {image = down1;}
+                    if (spriteNum == 2) {image = down2;}
                     break;
                 case "left":
-                    if (spriteNum == 1) {
-                        image = left1;
-                    }
-                    if (spriteNum == 2) {
-                        image = left2;
-                    }
+                    if (spriteNum == 1) {image = left1;}
+                    if (spriteNum == 2) {image = left2;}
                     break;
                 case "right":
-                    if (spriteNum == 1) {
-                        image = right1;
-                    }
-                    if (spriteNum == 2) {
-                        image = right2;
-                    }
+                    if (spriteNum == 1) {image = right1;}
+                    if (spriteNum == 2) {image = right2;}
                     break;
             }
-            g2.drawImage(image, screenX, screenY, gp.tileSize, gp.tileSize, null);
+
+            //thanh mau monster
+            if(type ==2 && hpBarOn == true){
+                double oneScale = (double)gp.tileSize/maxLife; //do dai cua thanh mau vd: mau toi da cua quai la 2 thi no se co 48 pixel va chia mau = 2 se duoc 2 cuc mau
+                double hpBarValue = oneScale*life;
+                g2.setColor(new Color(35,35,35));
+                g2.fillRect(screenX-1, screenY-16, gp.tileSize+2, 12);
+
+                g2.setColor(new Color(255,0,30));
+                g2.fillRect(screenX,screenY - 15 ,(int)hpBarValue,10);
+                hpBarCounter++;
+                if(hpBarCounter > 600){
+                    hpBarCounter =0;
+                    hpBarOn = false;
+                }
+            }
+
+            if (invincible == true) {
+                hpBarOn = true;
+                hpBarCounter = 0;
+                changAlpha(g2,0.4f);
+            }
+            if(dying==true){
+                dyingAnimation(g2);
+            }
+            g2.drawImage(image, screenX, screenY, null);
+            changAlpha(g2,1f);
         }
     }
 
+    public void dyingAnimation(Graphics2D g2) {
+        dyingCounter++;
+        int i =5;
+        if(dyingCounter<=i){changAlpha(g2,0f);}
+        if(dyingCounter>i && dyingCounter <=i*2){changAlpha(g2,1f);}
+        if(dyingCounter>i*2 && dyingCounter <=i*3){changAlpha(g2,0f);}
+        if(dyingCounter>i*3 && dyingCounter <=i*4){changAlpha(g2,1f);}
+        if(dyingCounter>i*4 && dyingCounter <=i*5){changAlpha(g2,0f);}
+        if(dyingCounter>i*5 && dyingCounter <=i*6){changAlpha(g2,1f);}
+        if(dyingCounter>i*6 && dyingCounter <=i*7){changAlpha(g2,0f);}
+        if(dyingCounter>i*7 && dyingCounter <=i*8){changAlpha(g2,1f);}
+        if(dyingCounter>i*8){
+            dying =false;
+            alive =false;
+        }
+    }
+    public void changAlpha(Graphics2D g2, float alphaValue){
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alphaValue));
+    }
     public void setAction() {
         // kế thừa trong npc oldman
     }
@@ -112,7 +166,6 @@ public class Entity {
         }
         gp.ui.currentDialogue = dialogues[dialogueIndex];
         dialogueIndex++;
-
         switch (gp.player.direction) {
             case "up":
                 direction = "down";
@@ -134,8 +187,18 @@ public class Entity {
         collisionOn = false;
         gp.cChecker.checkTile(this);
         gp.cChecker.checkObject(this, false);
-        gp.cChecker.checkPlayer(this);
-
+        gp.cChecker.checkEntity(this,gp.npc);
+        gp.cChecker.checkEntity(this,gp.monster);
+        boolean contactPlayer = gp.cChecker.checkPlayer(this);
+        if(this.type ==2 && contactPlayer==true) {
+            //check neu monster tan cong nguoi choi
+            if(gp.player.invincible ==false){
+                //gay dame
+                gp.playSE(7);
+                gp.player.life -=1;
+                gp.player.invincible = true;
+            }
+        }
         if (collisionOn == false) {
             switch (direction) {
                 case "up":
@@ -156,7 +219,7 @@ public class Entity {
             }
         }
         spriteCounter++;
-        if (spriteCounter > 10) {
+        if (spriteCounter > 35) {
             if (spriteNum == 1) {
                 spriteNum = 2;
             } else if (spriteNum == 2) {
@@ -164,5 +227,13 @@ public class Entity {
             }
             spriteCounter = 0;
         }
+        if (invincible == true) {
+            invincibleCounter++;
+            if (invincibleCounter > 40) {
+                invincible = false;
+                invincibleCounter = 0;
+            }
+        }
     }
+
 }

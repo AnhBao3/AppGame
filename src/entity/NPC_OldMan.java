@@ -16,40 +16,40 @@ public class NPC_OldMan extends Entity {
     public NPC_OldMan(GamePanel gp) {
         super(gp);
         direction = "down";
-        speed = 1;// tốc độ    
+        speed = 1;// tốc độ
         getImage();
         setDialogue(); //test
     }
 
     public void getImage() {
         //set hình ảnh người chơi
-        up1 = setup("/res/npc/oldman_up_1");
-        up2 = setup("/res/npc/oldman_up_2");
-        down1 = setup("/res/npc/oldman_down_1");
-        down2 = setup("/res/npc/oldman_down_2");
-        left1 = setup("/res/npc/oldman_left_1");
-        left2 = setup("/res/npc/oldman_left_2");
-        right1 = setup("/res/npc/oldman_right_1");
-        right2 = setup("/res/npc/oldman_right_2");
+        up1 = setup("/res/npc/oldman_up_1",gp.tileSize,gp.tileSize);
+        up2 = setup("/res/npc/oldman_up_2",gp.tileSize,gp.tileSize);
+        down1 = setup("/res/npc/oldman_down_1",gp.tileSize,gp.tileSize);
+        down2 = setup("/res/npc/oldman_down_2",gp.tileSize,gp.tileSize);
+        left1 = setup("/res/npc/oldman_left_1",gp.tileSize,gp.tileSize);
+        left2 = setup("/res/npc/oldman_left_2",gp.tileSize,gp.tileSize);
+        right1 = setup("/res/npc/oldman_right_1",gp.tileSize,gp.tileSize);
+        right2 = setup("/res/npc/oldman_right_2",gp.tileSize,gp.tileSize);
     }
-
     public void setAction() {
 
         actionLockCounter++;
 
         if (actionLockCounter == 120) {
             Random random = new Random();
-            int i = random.nextInt(100) + 1; // chọn những con só ngầu nhên từ 1 - 100
-            if (i <= 25) {
+            int a = 10;
+            int i = random.nextInt(200) + 1; // chọn những con só ngầu nhên từ 1 - 100
+            if (i <= 25-a) {
                 direction = "up";
             }
-            if (i > 25 && i <= 50) {
+            if (i > 25-a && i <= 50-a) {
                 direction = "down";
             }
-            if (i > 50 && i <= 75) {
+            if (i > 50-a && i <= 75-a) {
                 direction = "left";
             }
-            if (i > 75 && i <= 100) {
+            if (i > 75-a && i <= 100-a) {
                 direction = "right";
             }
             actionLockCounter = 0;

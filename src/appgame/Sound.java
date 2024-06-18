@@ -24,6 +24,10 @@ public class Sound {
         soundURL[3] = getClass().getResource("/res/sound/unlock.wav/");
         soundURL[4] = getClass().getResource("/res/sound/fanfare.wav/");
         soundURL[5] = getClass().getResource("/res/sound/toteti.wav/");
+        soundURL[6] = getClass().getResource("/res/sound/hit.wav/");
+        soundURL[7] = getClass().getResource("/res/sound/receivedamage.wav/");
+        soundURL[8] = getClass().getResource("/res/sound/swing.wav/");
+
     }
     public void setFile(int i){
         try{
