@@ -29,17 +29,6 @@ public class AssetSetter {
         gp.npc[0].worldX = gp.tileSize*21;
         gp.npc[0].worldY = gp.tileSize*21;
 
-        gp.npc[1] = new NPC_OldMan(gp);
-        gp.npc[1].worldX = gp.tileSize*24;
-        gp.npc[1].worldY = gp.tileSize*21;
-
-        gp.npc[2] = new NPC_OldMan(gp);
-        gp.npc[2].worldX = gp.tileSize*20;
-        gp.npc[2].worldY = gp.tileSize*22;
-
-        gp.npc[3] = new NPC_OldMan(gp);
-        gp.npc[3].worldX = gp.tileSize*20;
-        gp.npc[3].worldY = gp.tileSize*21;
     }
     public void setMonster(){
         gp.monster[0] = new MON_GreenSlime(gp);
@@ -49,14 +38,6 @@ public class AssetSetter {
         gp.monster[1] = new MON_GreenSlime(gp);
         gp.monster[1].worldX = gp.tileSize*23;
         gp.monster[1].worldY = gp.tileSize*37;
-
-        gp.monster[2] = new MON_GreenSlime(gp);
-        gp.monster[2].worldX = gp.tileSize*24;
-        gp.monster[2].worldY = gp.tileSize*37;
-
-        gp.monster[3] = new MON_GreenSlime(gp);
-        gp.monster[3].worldX = gp.tileSize*25;
-        gp.monster[3].worldY = gp.tileSize*37;
 
 //        gp.monster[0] = new MON_GreenSlime(gp);
 //        gp.monster[0].worldX = gp.tileSize*11;

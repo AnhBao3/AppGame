@@ -143,15 +143,12 @@ public abstract class Entity {
         if(dyingCounter<=i){changAlpha(g2,0f);}
         if(dyingCounter>i && dyingCounter <=i*2){changAlpha(g2,1f);}
         if(dyingCounter>i*2 && dyingCounter <=i*3){changAlpha(g2,0f);}
-        if(dyingCounter>i*3 && dyingCounter <=i*4){changAlpha(g2,1f);}
+        if(dyingCounter>i*3 && dyingCounter <=i*4){gp.playSE(9);changAlpha(g2,1f);}
         if(dyingCounter>i*4 && dyingCounter <=i*5){changAlpha(g2,0f);}
         if(dyingCounter>i*5 && dyingCounter <=i*6){changAlpha(g2,1f);}
         if(dyingCounter>i*6 && dyingCounter <=i*7){changAlpha(g2,0f);}
         if(dyingCounter>i*7 && dyingCounter <=i*8){changAlpha(g2,1f);}
-        if(dyingCounter>i*8){
-            dying =false;
-            alive =false;
-        }
+        if(dyingCounter>i*8){dying =false;alive =false;}
     }
     public void changAlpha(Graphics2D g2, float alphaValue){
         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alphaValue));
