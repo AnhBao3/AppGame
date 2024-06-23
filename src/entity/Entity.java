@@ -46,7 +46,6 @@ public abstract class Entity {
     //trạng thái người chơi
     public int maxLife;
     public int life;
-    public int type; //0 là người 1 = npc 2 là người
     public int speed;
     public String name;
     public int level;
@@ -58,11 +57,22 @@ public abstract class Entity {
     public int nextLevelExp;
     public int coin;
     public Entity currentWeapon;
-    public Entity currenSheld;
+    public Entity currentSheld;
+    public String description ="";
 
     //thuoc tinh cua do vat
     public int attackValue;
     public int defenderValue;
+
+    //type
+    public int type;
+    public final int type_player = 0;
+    public final int type_npc =1;
+    public final int type_monster =2;
+    public final int type_sword =3;
+    public final int type_axe =4;
+    public final int type_shield =5;
+    public final int type_consumable =6;
 
     public Entity(GamePanel gp) {
         this.gp = gp;
@@ -112,15 +122,21 @@ public abstract class Entity {
             if(type ==2 && hpBarOn == true){
                 double oneScale = (double)gp.tileSize/maxLife; //do dai cua thanh mau vd: mau toi da cua quai la 2 thi no se co 48 pixel va chia mau = 2 se duoc 2 cuc mau
                 double hpBarValue = oneScale*life;
-                g2.setColor(new Color(35,35,35));
-                g2.fillRect(screenX-1, screenY-16, gp.tileSize+2, 12);
+                if(hpBarValue <0){
+                    g2.setColor(new Color(35, 35, 35));
+                    g2.fillRect(screenX - 1, screenY - 16, gp.tileSize + 2, 12);
+                }
+                else {
+                    g2.setColor(new Color(35, 35, 35));
+                    g2.fillRect(screenX - 1, screenY - 16, gp.tileSize + 2, 12);
 
-                g2.setColor(new Color(255,0,30));
-                g2.fillRect(screenX,screenY - 15 ,(int)hpBarValue,10);
-                hpBarCounter++;
-                if(hpBarCounter > 600){
-                    hpBarCounter =0;
-                    hpBarOn = false;
+                    g2.setColor(new Color(255, 0, 30));
+                    g2.fillRect(screenX, screenY - 15, (int) hpBarValue, 10);
+                    hpBarCounter++;
+                    if (hpBarCounter > 600) {
+                        hpBarCounter = 0;
+                        hpBarOn = false;
+                    }
                 }
             }
 
@@ -143,7 +159,7 @@ public abstract class Entity {
         if(dyingCounter<=i){changAlpha(g2,0f);}
         if(dyingCounter>i && dyingCounter <=i*2){changAlpha(g2,1f);}
         if(dyingCounter>i*2 && dyingCounter <=i*3){changAlpha(g2,0f);}
-        if(dyingCounter>i*3 && dyingCounter <=i*4){gp.playSE(9);changAlpha(g2,1f);}
+        if(dyingCounter>i*3 && dyingCounter <=i*4){changAlpha(g2,1f);}
         if(dyingCounter>i*4 && dyingCounter <=i*5){changAlpha(g2,0f);}
         if(dyingCounter>i*5 && dyingCounter <=i*6){changAlpha(g2,1f);}
         if(dyingCounter>i*6 && dyingCounter <=i*7){changAlpha(g2,0f);}
@@ -187,12 +203,16 @@ public abstract class Entity {
         gp.cChecker.checkEntity(this,gp.npc);
         gp.cChecker.checkEntity(this,gp.monster);
         boolean contactPlayer = gp.cChecker.checkPlayer(this);
-        if(this.type ==2 && contactPlayer==true) {
+        if(this.type ==type_monster && contactPlayer==true) {
             //check neu monster tan cong nguoi choi
             if(gp.player.invincible ==false){
                 //gay dame
                 gp.playSE(7);
-                gp.player.life -=1;
+                int damage = attack -gp.player.defense;
+                if(damage <0){
+                    damage = 0;
+                }
+                gp.player.life -= damage;
                 gp.player.invincible = true;
             }
         }
@@ -232,5 +252,5 @@ public abstract class Entity {
             }
         }
     }
-
+    public void use(Entity entity){}
 }

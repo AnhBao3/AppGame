@@ -8,6 +8,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 
 import entity.Entity;
 import object.OBJ_Heart;
@@ -22,14 +23,16 @@ public class UI {
     Graphics2D g2;
     Font arial_40, arial_80B;
     //BufferedImage KeyImage;
+    ArrayList<String> message = new ArrayList<>();
+    ArrayList<Integer> messageCounter = new ArrayList<>();
     public boolean messageOn = false;
-    public String message = "";
-    int messageCounter = 0;
     public boolean gameFinished = false;
     public String currentDialogue = "";
     public int commandNum = 0;
     public int titleScreenState = 0; //  0: 
     BufferedImage heart_full, heart_half, heart_blank;
+    public int slotCol =0;
+    public int slotRow =0;
 
     public UI(GamePanel gp) {
         this.gp = gp;
@@ -62,6 +65,7 @@ public class UI {
         //playstate
         if (gp.gameState == gp.playState) {
             drawPlayerLife();
+            drawMessage();
         }
         //pauseState
         if (gp.gameState == gp.pauseState) {
@@ -75,6 +79,93 @@ public class UI {
         //chi so nguoi choi
         if(gp.gameState == gp.characterState){
             drawCharacterScreem();
+            drawInventory();
+        }
+    }
+
+    public void drawInventory() {
+        //khung
+        int frameX = gp.tileSize*9;
+        int frameY = gp.tileSize;
+        int frameWidth = gp.tileSize*6;
+        int frameHeight = gp.tileSize*5;
+        drawSubWindow(frameX,frameY,frameWidth,frameHeight);
+
+        //slot do
+        final int slotXstart = frameX + 20;
+        final int slotYstart = frameY + 20;
+        int slotX = slotXstart;
+        int slotY = slotYstart;
+        int slotSize = gp.tileSize+3;
+        // draw player item
+        for(int i =0;i<gp.player.inventory.size();i++){
+            if(gp.player.inventory.get(i) == gp.player.currentWeapon ||
+            gp.player.inventory.get(i)==gp.player.currentSheld){
+                g2.setColor(new Color(231, 76, 60));
+                g2.fillRoundRect(slotX,slotY,gp.tileSize,gp.tileSize,10,10);
+            }
+            g2.drawImage(gp.player.inventory.get(i).down1,slotX,slotY,null);
+            slotX += slotSize;
+            if(i == 4 || i == 9 || i == 14){
+                slotX = slotXstart;
+                slotY += slotSize;
+            }
+        }
+        //CURSOR
+        int cursorX = slotXstart+ (slotSize*slotCol);
+        int cursorY = slotYstart +(slotSize*slotRow);
+        int cursorWidth = gp.tileSize;
+        int cursorHeight = gp.tileSize;
+
+        //draw cursor
+        g2.setColor(Color.white);
+        g2.setStroke(new BasicStroke(3));
+        g2.drawRoundRect(cursorX,cursorY,cursorWidth,cursorHeight,10,10);
+
+        // Decription frame
+        int dFrameX = frameX;
+        int dFrameY = frameY +frameHeight;
+        int dFrameWidth = frameWidth;
+        int dFrameHeight = gp.tileSize*3;
+        //text
+        int textX =dFrameX+20;
+        int textY = dFrameY +gp.tileSize;
+        g2.setFont(g2.getFont().deriveFont(15F));
+
+        int itemIndex = getItemIndexOnSlot();
+        if(itemIndex<gp.player.inventory.size()){
+
+            drawSubWindow(dFrameX,dFrameY,dFrameWidth,dFrameHeight);
+
+            for(String line: gp.player.inventory.get(itemIndex).description.split("\n")){
+                g2.drawString(line,textX,textY);
+                textY +=32;
+            }
+        }
+
+    }
+    public int getItemIndexOnSlot(){
+        int itemIndex = slotCol + (slotRow*5);
+        return itemIndex;
+    }
+    public void drawMessage() {
+        int messageX = gp.tileSize-5;
+        int messageY = gp.tileSize*4;
+        g2.setFont(g2.getFont().deriveFont(Font.BOLD,20F));
+        for(int i =0;i<message.size();i++){
+            if(message.get(i) !=null){
+                g2.setColor(Color.black );
+                g2.drawString(message.get(i),messageX+2,messageY+2);
+                g2.setColor(Color.white);
+                g2.drawString(message.get(i),messageX,messageY);
+                int counter = messageCounter.get(i) +1;
+                messageCounter.set(i,counter);
+                messageY +=50;
+                if(messageCounter.get(i) > 180){
+                    message.remove(i);
+                    messageCounter.remove(i);
+                }
+            }
         }
     }
 
@@ -97,7 +188,8 @@ public class UI {
         textY+= lineHeight;
         g2.drawString("Sức Mạnh Công Kích",textX,textY);
         textY+= lineHeight;
-        g2.drawString("Kỹ Năng",textX,textY);
+        g2.drawString("Chịu đựng" +
+                "",textX,textY);
         textY+= lineHeight;
         g2.drawString("Chỉ Số Tấn Công",textX,textY);
         textY+= lineHeight;
@@ -165,7 +257,7 @@ public class UI {
 
         g2.drawImage(gp.player.currentWeapon.down1,tailX - gp.tileSize, textY-14,null);
         textY += gp.tileSize;
-        g2.drawImage(gp.player.currenSheld.down1,tailX-gp.tileSize,textY-14,null);
+        g2.drawImage(gp.player.currentSheld.down1,tailX-gp.tileSize,textY-14,null);
 
 
     }
@@ -188,12 +280,6 @@ public class UI {
         int x = gp.screenWidth / 2 - length / 2;
         return x;
     }
-
-    public void showMessage(String text) {
-        message = text;
-        messageOn = true;
-    }
-
     // màn hình nói chuyện
     public void drawDialogueScreeen() {
         // khung noi chuyen
@@ -335,5 +421,9 @@ public class UI {
             i++;
             x+= gp.tileSize;
         }
+    }
+    public void addMessage(String text){
+        message.add(text);
+        messageCounter.add(0);
     }
 }

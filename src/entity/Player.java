@@ -6,12 +6,14 @@ package entity;
 
 import appgame.GamePanel;
 import appgame.KeyHandler;
+import object.OBJ_Key;
 import object.OBJ_Shield_Wood;
 import object.OBJ_Sword_Normal;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.AlphaComposite;
+import java.util.ArrayList;
 
 /**
  * @author Admin
@@ -22,6 +24,8 @@ public class Player extends Entity {
     public final int screenX;
     public final int screenY;
     public boolean attackCanceled = false;
+    public ArrayList<Entity> inventory = new ArrayList<Entity>();
+    public final int maxInventorySize = 20;
 
     public Player(GamePanel gp, KeyHandler keyH) {
         super(gp);
@@ -37,12 +41,13 @@ public class Player extends Entity {
         solidArea.width = 32;
         solidArea.height = 32;
 
-        attackArea.width = 36;
-        attackArea.height = 36;
+//        attackArea.width = 36;
+//        attackArea.height = 36;
 
         setDefaultValues();
         getPlayerImage();
         getPlayerAttackImage();
+        setItems();
     }
 
     public void setDefaultValues() {
@@ -53,22 +58,29 @@ public class Player extends Entity {
 
         //trạng thái người chơi
         level =1;
-        maxLife = 8;
+        maxLife = 6;
         life = maxLife;
         strength = 1;
         exp = 0;
+        dexterity = 1;
         nextLevelExp = 5;
         coin = 0;
         currentWeapon = new OBJ_Sword_Normal(gp);
-        currenSheld = new OBJ_Shield_Wood(gp);
+        currentSheld = new OBJ_Shield_Wood(gp);
         attack = getAttack();
         defense = getDefense();
     }
+    public void setItems(){
+        inventory.add(currentWeapon);
+        inventory.add(currentSheld);
+        inventory.add(new OBJ_Key(gp));
+    }
     public int getAttack(){
+        attackArea = currentWeapon.attackArea;
         return attack = strength * currentWeapon.attackValue;
     }
     public int getDefense(){
-        return defense = dexterity * currenSheld.defenderValue;
+        return defense = dexterity * currentSheld.defenderValue;
     }
     public void getPlayerImage() {
         //set hình ảnh người chơi
@@ -83,14 +95,26 @@ public class Player extends Entity {
     }
 
     public void getPlayerAttackImage() {
-        attackUp1 = setup("/res/player/boy_attack_up_1", gp.tileSize, gp.tileSize * 2);
-        attackUp2 = setup("/res/player/boy_attack_up_2", gp.tileSize, gp.tileSize * 2);
-        attackDown1 = setup("/res/player/boy_attack_down_1", gp.tileSize, gp.tileSize * 2);
-        attackDown2 = setup("/res/player/boy_attack_down_2", gp.tileSize, gp.tileSize * 2);
-        attackLeft1 = setup("/res/player/boy_attack_left_1", gp.tileSize * 2, gp.tileSize);
-        attackLeft2 = setup("/res/player/boy_attack_left_2", gp.tileSize * 2, gp.tileSize);
-        attackRight1 = setup("/res/player/boy_attack_right_1", gp.tileSize * 2, gp.tileSize);
-        attackRight2 = setup("/res/player/boy_attack_right_2", gp.tileSize * 2, gp.tileSize);
+        if(currentWeapon.type == type_sword){
+            attackUp1 = setup("/res/player/boy_attack_up_1", gp.tileSize, gp.tileSize * 2);
+            attackUp2 = setup("/res/player/boy_attack_up_2", gp.tileSize, gp.tileSize * 2);
+            attackDown1 = setup("/res/player/boy_attack_down_1", gp.tileSize, gp.tileSize * 2);
+            attackDown2 = setup("/res/player/boy_attack_down_2", gp.tileSize, gp.tileSize * 2);
+            attackLeft1 = setup("/res/player/boy_attack_left_1", gp.tileSize * 2, gp.tileSize);
+            attackLeft2 = setup("/res/player/boy_attack_left_2", gp.tileSize * 2, gp.tileSize);
+            attackRight1 = setup("/res/player/boy_attack_right_1", gp.tileSize * 2, gp.tileSize);
+            attackRight2 = setup("/res/player/boy_attack_right_2", gp.tileSize * 2, gp.tileSize);
+        }
+      if(currentWeapon.type == type_axe){
+          attackUp1 = setup("/res/player/boy_axe_up_1", gp.tileSize, gp.tileSize * 2);
+          attackUp2 = setup("/res/player/boy_axe_up_2", gp.tileSize, gp.tileSize * 2);
+          attackDown1 = setup("/res/player/boy_axe_down_1", gp.tileSize, gp.tileSize * 2);
+          attackDown2 = setup("/res/player/boy_axe_down_2", gp.tileSize, gp.tileSize * 2);
+          attackLeft1 = setup("/res/player/boy_axe_left_1", gp.tileSize * 2, gp.tileSize);
+          attackLeft2 = setup("/res/player/boy_axe_left_2", gp.tileSize * 2, gp.tileSize);
+          attackRight1 = setup("/res/player/boy_axe_right_1", gp.tileSize * 2, gp.tileSize);
+          attackRight2 = setup("/res/player/boy_axe_right_2", gp.tileSize * 2, gp.tileSize);
+      }
     }
 
     public void update() {
@@ -222,26 +246,73 @@ public class Player extends Entity {
             if(gp.monster[i].invincible == false){
                 //dame gay len monster
                 gp.playSE(6);
-                gp.monster[i].life -=1;
+
+                int damage = attack -gp.monster[i].defense;
+                if(damage <0){
+                    damage = 0;
+                }
+                gp.monster[i].life -=damage;
+                gp.ui.addMessage(damage + " Sát thương!");
                 gp.monster[i].invincible =true;
                 gp.monster[i].damageReaction();
                 if(gp.monster[i].life <=0){
                     gp.monster[i].dying =true;
+                    gp.ui.addMessage("Hạ gục " + gp.monster[i].name+"!");
+                    gp.ui.addMessage("Kinh nghiệm +" + gp.monster[i].exp);
+                    exp += gp.monster[i].exp;
+                    checkLevelUp();
                 }
             }
         }
     }
+    public void selectItem(){
+        int itemIndex = gp.ui.getItemIndexOnSlot();
 
+        if(itemIndex < inventory.size()){
+            Entity selectedItem = inventory.get(itemIndex);
+
+            if(selectedItem.type == type_sword || selectedItem.type == type_axe){
+                currentWeapon = selectedItem;
+                attack = getAttack();
+                getPlayerAttackImage();
+            }
+            if(selectedItem.type == type_shield){
+                currentSheld = selectedItem;
+                defense = getDefense();
+            }
+            if(selectedItem.type == type_consumable){
+                selectedItem.use(this);
+                inventory.remove(itemIndex);
+            }
+        }
+    }
+    public void checkLevelUp() {
+        if(exp>= nextLevelExp){
+            level++;
+            nextLevelExp = nextLevelExp*2;
+            maxLife += 2;
+            strength++;
+            dexterity++;
+            attack = getAttack();
+            defense = getDefense();
+            gp.playSE(10);
+            gp.gameState = gp.dialogueState;
+            gp.ui.currentDialogue = "Lên cấp "+ level;
+        }
+    }
     private void contactMonster(int i) {
         if (i != 999) {
             if (invincible == false) {
                 gp.playSE(7);
-                life -= 1;
+                int damage = gp.monster[i].attack -defense;
+                if(damage <0){
+                    damage = 0;
+                }
+                life -= damage;
                 invincible = true;
             }
         }
     }
-
     public void draw(Graphics2D g2) {
         int tempScreenX = screenX;
         int tempScreenY = screenY;
@@ -304,13 +375,22 @@ public class Player extends Entity {
         g2.drawImage(image, tempScreenX, tempScreenY, null);
         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
     }
-
     public void pickUpObject(int i) {
         ///999 là ko đụng phải obj
         if (i != 999) {
+            String text;
+            if(inventory.size() != maxInventorySize){
+                inventory.add(gp.obj[i]); // them vao inventory!
+                gp.playSE(1);
+                text = "Nhận " + gp.obj[i].name + "!";
+            }
+            else {
+                text = "Full đồ !";
+            }
+            gp.ui.addMessage(text);
+            gp.obj[i] = null;
         }
     }
-
     private void interactNPC(int i) {
         if (gp.keyH.enterPressed == true) {
             if (i != 999) {

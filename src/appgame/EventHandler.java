@@ -82,8 +82,9 @@ public class EventHandler {
         if(gp.keyH.enterPressed == true){
             gp.gameState = gameState;
             gp.player.attackCanceled = true;
-            gp.ui.currentDialogue = "U?ng n??c";
+            gp.ui.currentDialogue = "Uống nước";
             gp.player.life =gp.player.maxLife;
+            gp.aSetter.setMonster();
         }
         gp.keyH.enterPressed = false;
     }

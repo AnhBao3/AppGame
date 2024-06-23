@@ -11,11 +11,14 @@ public class MON_GreenSlime extends Entity {
     public MON_GreenSlime(GamePanel gp) {
         super(gp);
         this.gp = gp;
-        type = 2;
-        name = "Green Slime";
+        type = type_monster;
+        name = "Zac chất nhờn";
         speed = 1;
         maxLife = 5;
         life = maxLife;
+        attack = 5;
+        defense =0;
+        exp = 2;
 
         solidArea.x = 3;
         solidArea.y = 18;

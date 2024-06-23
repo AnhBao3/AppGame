@@ -17,7 +17,8 @@ import javax.imageio.ImageIO;
 public class OBJ_Key extends Entity {
     public OBJ_Key(GamePanel gp){
         super(gp);
-        name = "Key";
+        name = "Chìa khóa";
         down1 = setup("/res/objects/key",gp.tileSize,gp.tileSize);
+        description ="["+ name + "]\ndùng để mở cửa";
     }
 }
