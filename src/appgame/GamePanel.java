@@ -8,12 +8,14 @@ import entity.Entity;
 import entity.Player;
 
 import java.awt.*;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import javax.swing.JPanel;
 
 import tile.TileManager;
+import tile_interactive.InteractiveTile;
 
 /**
  *
@@ -54,10 +56,13 @@ public class GamePanel extends JPanel implements Runnable {
     //Thực thể và NPC
     public Player player = new Player(this, keyH);
     //Hiển thị 10 đối tượng cùng 1 lúc, VD: khi nhận objA thì objA sẽ mất khỏi màn hình để có thể thêm 1 obj.. vào ô trống
-    public Entity obj[] = new Entity[10];
+    public Entity obj[] = new Entity[20];
     public Entity npc[] = new Entity[10];
+    public InteractiveTile iTile[] = new InteractiveTile[50];
     public Entity monster[] = new Entity[20];
+    public ArrayList<Entity> projectileList = new ArrayList<>();
     ArrayList<Entity> entiList = new ArrayList<>();//thực thể lớn
+
 
     //Trạng thái game có thể là đang ở menu, có thể là đang ở trong game
     public int gameState;
@@ -151,8 +156,24 @@ public class GamePanel extends JPanel implements Runnable {
                         monster[i].update();
                     }
                     if(monster[i].alive ==false){
+                        monster[i].checkDrop();
                         monster[i] = null;
                     }
+                }
+            }
+            for(int i=0;i<projectileList.size();i++) {
+                if(projectileList.get(i) != null) {
+                    if(projectileList.get(i).alive ==true){
+                        projectileList.get(i).update();
+                    }
+                    if(projectileList.get(i).alive==false){
+                        projectileList.remove(i);
+                    }
+                }
+            }
+            for(int i=0;i<iTile.length;i++){
+                if(iTile[i] != null) {
+                    iTile[i].update();
                 }
             }
         }
@@ -175,6 +196,12 @@ public class GamePanel extends JPanel implements Runnable {
         } else {
             //tile
             tileM.draw(g2);
+            //tile interactive
+            for(int i=0;i<iTile.length;i++){
+                if(iTile[i]!=null){
+                    iTile[i].draw(g2);
+                }
+            }
 
             //add vaào danh sach lơn
             entiList.add(player);
@@ -194,6 +221,13 @@ public class GamePanel extends JPanel implements Runnable {
                     entiList.add(monster[i]);
                 }
             }
+
+            for(int i =0;i<projectileList.size();i++){
+                if(projectileList.get(i)!=null){
+                    entiList.add(projectileList.get(i));
+                }
+            }
+
             Collections.sort(entiList,new Comparator<Entity>() {
                 @Override
                 public int compare(Entity e1, Entity e2) {
@@ -237,6 +271,7 @@ public class GamePanel extends JPanel implements Runnable {
         aSetter.setObject();
         aSetter.setNPC();
         aSetter.setMonster();
+        aSetter.setInteractiveTile();
         //set nhạc nền
         gameState = titleState;
     }

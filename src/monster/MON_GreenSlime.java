@@ -2,6 +2,10 @@ package monster;
 
 import appgame.GamePanel;
 import entity.Entity;
+import object.OBJ_Coin;
+import object.OBJ_Heart;
+import object.OBJ_Mana;
+import object.OBJ_Slime;
 
 import java.util.Random;
 
@@ -19,7 +23,7 @@ public class MON_GreenSlime extends Entity {
         attack = 5;
         defense =0;
         exp = 2;
-
+        projectile = new OBJ_Slime(gp);
         solidArea.x = 3;
         solidArea.y = 18;
         solidArea.width = 42;
@@ -59,9 +63,30 @@ public class MON_GreenSlime extends Entity {
             actionLockCounter = 0;
             //mỗi 120 khung hình thì nó mới đổi hướng duy chuyển của NPC
         }
+        int i = new Random().nextInt(100)+1;
+        if(i > 99 && projectile.alive == false && shotAvailableCounter ==30){
+            projectile.set(worldX,worldY,direction,true,this);
+            gp.projectileList.add(projectile);
+            shotAvailableCounter = 0;
+        }
     }
     public void damageReaction(){
         actionLockCounter++;
         direction = gp.player.direction;
+    }
+    public void checkDrop(){
+
+        int i = new Random().nextInt(100)+1;
+
+        //set monster drop
+        if(i<50){
+            dropIem(new OBJ_Coin(gp));
+        }
+        if(i>=50 && i<75){
+            dropIem(new OBJ_Heart(gp));
+        }
+        if(i>=75 && i<100){
+            dropIem(new OBJ_Mana(gp));
+        }
     }
 }

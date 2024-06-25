@@ -12,6 +12,7 @@ import java.util.ArrayList;
 
 import entity.Entity;
 import object.OBJ_Heart;
+import object.OBJ_Mana;
 
 /**
  *
@@ -30,7 +31,7 @@ public class UI {
     public String currentDialogue = "";
     public int commandNum = 0;
     public int titleScreenState = 0; //  0: 
-    BufferedImage heart_full, heart_half, heart_blank;
+    BufferedImage heart_full, heart_half, heart_blank, manafull, manablank;
     public int slotCol =0;
     public int slotRow =0;
 
@@ -51,7 +52,11 @@ public class UI {
         heart_full = heart.image;
         heart_half = heart.image2;
         heart_blank = heart.image3;
+        Entity mana = new OBJ_Mana(gp);
+        manafull = mana.image;
+        manablank = mana.image2;
     }
+
 
     public void draw(Graphics2D g2) {
         this.g2 = g2;
@@ -78,7 +83,7 @@ public class UI {
         }
         //chi so nguoi choi
         if(gp.gameState == gp.characterState){
-            drawCharacterScreem();
+            drawCharacterScreen();
             drawInventory();
         }
     }
@@ -144,10 +149,12 @@ public class UI {
         }
 
     }
+
     public int getItemIndexOnSlot(){
         int itemIndex = slotCol + (slotRow*5);
         return itemIndex;
     }
+
     public void drawMessage() {
         int messageX = gp.tileSize-5;
         int messageY = gp.tileSize*4;
@@ -169,7 +176,7 @@ public class UI {
         }
     }
 
-    public void drawCharacterScreem() {
+    public void drawCharacterScreen() {
         //tạo khung
         final int frameX = gp.tileSize-5;
         final int frameY = gp.tileSize;
@@ -186,10 +193,11 @@ public class UI {
         textY+= lineHeight;
         g2.drawString("Máu",textX,textY);
         textY+= lineHeight;
+        g2.drawString("Năng lượng",textX,textY);
+        textY+= lineHeight;
         g2.drawString("Sức Mạnh Công Kích",textX,textY);
         textY+= lineHeight;
-        g2.drawString("Chịu đựng" +
-                "",textX,textY);
+        g2.drawString("Chịu đựng",textX,textY);
         textY+= lineHeight;
         g2.drawString("Chỉ Số Tấn Công",textX,textY);
         textY+= lineHeight;
@@ -200,7 +208,7 @@ public class UI {
         g2.drawString("Cấp Tiếp Theo",textX,textY);
         textY+= lineHeight;
         g2.drawString("Vàng",textX,textY);
-        textY+= lineHeight+20;
+        textY+= lineHeight+10;
         g2.drawString("Vũ Khí",textX,textY);
         textY+= lineHeight+15;
         g2.drawString("Khiên",textX,textY);
@@ -216,6 +224,11 @@ public class UI {
         textY+= lineHeight;
 
         value = String.valueOf(gp.player.life + "/" + gp.player.maxLife);
+        textX = getXforAlignToRightText(value,tailX);
+        g2.drawString(value,textX,textY);
+        textY+= lineHeight;
+
+        value = String.valueOf(gp.player.mana + "/" + gp.player.maxMana);
         textX = getXforAlignToRightText(value,tailX);
         g2.drawString(value,textX,textY);
         textY+= lineHeight;
@@ -255,17 +268,19 @@ public class UI {
         g2.drawString(value,textX,textY);
         textY+= lineHeight;
 
-        g2.drawImage(gp.player.currentWeapon.down1,tailX - gp.tileSize, textY-14,null);
+        g2.drawImage(gp.player.currentWeapon.down1,tailX - gp.tileSize, textY-24,null);
         textY += gp.tileSize;
-        g2.drawImage(gp.player.currentSheld.down1,tailX-gp.tileSize,textY-14,null);
+        g2.drawImage(gp.player.currentSheld.down1,tailX-gp.tileSize,textY-24,null);
 
 
     }
+
     public int getXforAlignToRightText(String text,int tailX){
         int length = (int) g2.getFontMetrics().getStringBounds(text, g2).getWidth();
         int x = tailX - length;
         return x;
     }
+
     public void drawPauseScree() {
         String text = "TẠM DỪNG";
         g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 80F));
@@ -421,7 +436,26 @@ public class UI {
             i++;
             x+= gp.tileSize;
         }
+        //mana
+        x = (gp.tileSize/2)-5;
+        y = (int)(gp.tileSize*1.5);
+        i =0;
+        while (i<gp.player.maxMana){
+            g2.drawImage(manablank, x, y,null);
+            i++;
+            x+= 35;
+        }
+        //draw mana
+        x = (gp.tileSize/2)-5;
+        y = (int)(gp.tileSize*1.5);
+        i =0;
+        while (i<gp.player.mana){
+            g2.drawImage(manafull, x, y,null);
+            i++;
+            x+=35;
+        }
     }
+
     public void addMessage(String text){
         message.add(text);
         messageCounter.add(0);

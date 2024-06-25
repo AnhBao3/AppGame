@@ -7,6 +7,7 @@ package appgame;
 import entity.NPC_OldMan;
 import monster.MON_GreenSlime;
 import object.*;
+import tile_interactive.IT_DryTree;
 
 /**
  *
@@ -20,15 +21,15 @@ public class AssetSetter {
 
     public void setObject(){
         int i = 0;
-        gp.obj[i] = new OBJ_Key(gp);
+        gp.obj[i] = new OBJ_Coin(gp);
         gp.obj[i].worldX = gp.tileSize * 25;
         gp.obj[i].worldY = gp.tileSize * 23;
         i++;
-        gp.obj[i] = new OBJ_Key(gp);
+        gp.obj[i] = new OBJ_Mana(gp);
         gp.obj[i].worldX = gp.tileSize * 21;
         gp.obj[i].worldY = gp.tileSize * 19;
         i++;
-        gp.obj[i] = new OBJ_Key(gp);
+        gp.obj[i] = new OBJ_Heart(gp);
         gp.obj[i].worldX = gp.tileSize * 26;
         gp.obj[i].worldY = gp.tileSize * 22;
         i++;
@@ -74,6 +75,8 @@ public class AssetSetter {
         gp.monster[i].worldX = gp.tileSize*23;
         gp.monster[i].worldY = gp.tileSize*42;
 
+
+
 //        gp.monster[0] = new MON_GreenSlime(gp);
 //        gp.monster[0].worldX = gp.tileSize*11;
 //        gp.monster[0].worldY = gp.tileSize*10;
@@ -81,5 +84,21 @@ public class AssetSetter {
 //        gp.monster[1] = new MON_GreenSlime(gp);
 //        gp.monster[1].worldX = gp.tileSize*11;
 //        gp.monster[1].worldY = gp.tileSize*11;
+    }
+    public void setInteractiveTile(){
+        int i =0;
+        gp.iTile[i] = new IT_DryTree(gp,27,12);
+        i++;
+        gp.iTile[i] = new IT_DryTree(gp,28,12);
+        i++;
+        gp.iTile[i] = new IT_DryTree(gp,29,12);
+        i++;
+        gp.iTile[i] = new IT_DryTree(gp,30,12);
+        i++;
+        gp.iTile[i] = new IT_DryTree(gp,31,12);
+        i++;
+        gp.iTile[i] = new IT_DryTree(gp,32,12);
+        i++;
+        gp.iTile[i] = new IT_DryTree(gp,33,12);
     }
 }

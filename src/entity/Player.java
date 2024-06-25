@@ -6,9 +6,7 @@ package entity;
 
 import appgame.GamePanel;
 import appgame.KeyHandler;
-import object.OBJ_Key;
-import object.OBJ_Shield_Wood;
-import object.OBJ_Sword_Normal;
+import object.*;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -62,11 +60,17 @@ public class Player extends Entity {
         life = maxLife;
         strength = 1;
         exp = 0;
+        ammo = 10;
         dexterity = 1;
         nextLevelExp = 5;
         coin = 0;
+        maxMana = 4;
+        mana = maxMana;
         currentWeapon = new OBJ_Sword_Normal(gp);
         currentSheld = new OBJ_Shield_Wood(gp);
+        projectile = new OBJ_Egg(gp);
+        //projectile = new OBJ_Slime(gp);
+
         attack = getAttack();
         defense = getDefense();
     }
@@ -106,14 +110,14 @@ public class Player extends Entity {
             attackRight2 = setup("/res/player/boy_attack_right_2", gp.tileSize * 2, gp.tileSize);
         }
       if(currentWeapon.type == type_axe){
-          attackUp1 = setup("/res/player/boy_axe_up_1", gp.tileSize, gp.tileSize * 2);
-          attackUp2 = setup("/res/player/boy_axe_up_2", gp.tileSize, gp.tileSize * 2);
-          attackDown1 = setup("/res/player/boy_axe_down_1", gp.tileSize, gp.tileSize * 2);
-          attackDown2 = setup("/res/player/boy_axe_down_2", gp.tileSize, gp.tileSize * 2);
-          attackLeft1 = setup("/res/player/boy_axe_left_1", gp.tileSize * 2, gp.tileSize);
-          attackLeft2 = setup("/res/player/boy_axe_left_2", gp.tileSize * 2, gp.tileSize);
-          attackRight1 = setup("/res/player/boy_axe_right_1", gp.tileSize * 2, gp.tileSize);
-          attackRight2 = setup("/res/player/boy_axe_right_2", gp.tileSize * 2, gp.tileSize);
+          attackUp1 = setup("/res/player/boy_attack_axe_up_1", gp.tileSize, gp.tileSize * 2);
+          attackUp2 = setup("/res/player/boy_attack_axe_up_2", gp.tileSize, gp.tileSize * 2);
+          attackDown1 = setup("/res/player/boy_attack_axe_down_1", gp.tileSize, gp.tileSize * 2);
+          attackDown2 = setup("/res/player/boy_attack_axe_down_2", gp.tileSize, gp.tileSize * 2);
+          attackLeft1 = setup("/res/player/boy_attack_axe_left_1", gp.tileSize * 2, gp.tileSize);
+          attackLeft2 = setup("/res/player/boy_attack_axe_left_2", gp.tileSize * 2, gp.tileSize);
+          attackRight1 = setup("/res/player/boy_attack_axe_right_1", gp.tileSize * 2, gp.tileSize);
+          attackRight2 = setup("/res/player/boy_attack_axe_right_2", gp.tileSize * 2, gp.tileSize);
       }
     }
 
@@ -145,6 +149,8 @@ public class Player extends Entity {
             //check monsster
             int monsterIndex = gp.cChecker.checkEntity(this, gp.monster);
             contactMonster(monsterIndex);
+            //check interactive tile
+            int iTileIndex = gp.cChecker.checkEntity(this,gp.iTile);
             //check event
             gp.eHander.checkEvent();
             if (collisionOn == false && keyH.enterPressed == false) {
@@ -166,7 +172,7 @@ public class Player extends Entity {
                         break;
                 }
             }
-            if(keyH.enterPressed == true && attackCanceled == false){
+            if(keyH.enterPressed == true && attackCanceled == false ){
                 gp.playSE(8);
                 attacking = true;
                 spriteCounter =0;
@@ -182,6 +188,7 @@ public class Player extends Entity {
                 }
                 spriteCounter = 0;
             }
+
         }
         //dùng bien tam de Counter mat mau nhanh khi dung vao monster
         if (invincible == true) {
@@ -190,6 +197,28 @@ public class Player extends Entity {
                 invincible = false;
                 invincibleCounter = 0;
             }
+        }
+        if(gp.keyH.shotKeyPressed == true && projectile.alive == false && shotAvailableCounter ==30 && projectile.haveResource(this)==true){
+            //set default
+            projectile.set(worldX,worldY,direction,true,this);
+            //them vao danh sach
+
+            //
+            projectile.subtractResource(this);
+            gp.projectileList.add(projectile);
+
+            shotAvailableCounter=0;
+            
+            gp.playSE(12);
+        }
+        if(shotAvailableCounter < 30){
+            shotAvailableCounter++;
+        }
+        if(life>maxLife){
+            life=maxLife;
+        }
+        if(mana>maxMana){
+            mana=maxMana;
         }
         // trong java X sẽ là đại diện cho đi vào bên phải, và Y là đi xuống
 
@@ -228,7 +257,11 @@ public class Player extends Entity {
             solidArea.height = attackArea.height;
             //check va cham voi quai vat sau khi up date vi tri
             int monsterIndex = gp.cChecker.checkEntity(this, gp.monster);
-            damageMonster(monsterIndex);
+            damageMonster(monsterIndex,attack);
+
+            int iTileIndex = gp.cChecker.checkEntity(this,gp.iTile);
+            damageInteractiveTile(iTileIndex);
+
             worldX = currentWorldX;
             worldY = currentWorldY;
             solidArea.width = solidAreaWidth;
@@ -240,8 +273,18 @@ public class Player extends Entity {
             attacking = false;
         }
     }
-
-    public void damageMonster(int i) {
+    public void damageInteractiveTile(int i){
+        if(i!=999 && gp.iTile[i].destructible == true
+                && gp.iTile[i].isCorrectItem(this)==true && gp.iTile[i].invincible ==false ){
+            gp.iTile[i].playSE();
+            gp.iTile[i].life--;
+            gp.iTile[i].invincible = true;
+            if(gp.iTile[i].life ==0){
+                gp.iTile[i] = gp.iTile[i].getDestroyedFrom();
+            }
+        }
+    }
+    public void damageMonster(int i, int attack) {
         if (i != 999) {
             if(gp.monster[i].invincible == false){
                 //dame gay len monster
@@ -302,7 +345,7 @@ public class Player extends Entity {
     }
     private void contactMonster(int i) {
         if (i != 999) {
-            if (invincible == false) {
+            if (invincible == false && gp.monster[i].dying == false) {
                 gp.playSE(7);
                 int damage = gp.monster[i].attack -defense;
                 if(damage <0){
@@ -378,17 +421,25 @@ public class Player extends Entity {
     public void pickUpObject(int i) {
         ///999 là ko đụng phải obj
         if (i != 999) {
-            String text;
-            if(inventory.size() != maxInventorySize){
-                inventory.add(gp.obj[i]); // them vao inventory!
-                gp.playSE(1);
-                text = "Nhận " + gp.obj[i].name + "!";
+            //pick coin
+            if(gp.obj[i].type == type_pickupOnly){
+                gp.obj[i].use(this);
+                gp.obj[i] = null;
             }
+            //pick va add vao inven
             else {
-                text = "Full đồ !";
+                String text;
+                if(inventory.size() != maxInventorySize){
+                    inventory.add(gp.obj[i]); // them vao inventory!
+                    gp.playSE(1);
+                    text = "Nhận " + gp.obj[i].name + "!";
+                }
+                else {
+                    text = "Full đồ !";
+                }
+                gp.ui.addMessage(text);
+                gp.obj[i] = null;
             }
-            gp.ui.addMessage(text);
-            gp.obj[i] = null;
         }
     }
     private void interactNPC(int i) {

@@ -42,12 +42,16 @@ public abstract class Entity {
     int dyingCounter = 0;
     boolean hpBarOn = false;
     int hpBarCounter;
+    public int shotAvailableCounter =0;
 
     //trạng thái người chơi
     public int maxLife;
     public int life;
     public int speed;
     public String name;
+    public int maxMana;
+    public int mana;
+    public int ammo;
     public int level;
     public int strength;
     public int dexterity;
@@ -59,10 +63,13 @@ public abstract class Entity {
     public Entity currentWeapon;
     public Entity currentSheld;
     public String description ="";
+    public Projectile projectile;
 
     //thuoc tinh cua do vat
+    public int value;
     public int attackValue;
     public int defenderValue;
+    public int useCost;
 
     //type
     public int type;
@@ -73,6 +80,7 @@ public abstract class Entity {
     public final int type_axe =4;
     public final int type_shield =5;
     public final int type_consumable =6;
+    public final int type_pickupOnly =7;
 
     public Entity(GamePanel gp) {
         this.gp = gp;
@@ -88,6 +96,17 @@ public abstract class Entity {
             e.printStackTrace();
         }
         return image;
+    }
+    public void checkDrop(){}
+    public void dropIem(Entity droppedItem){
+        for(int i=0;i<gp.obj.length;i++){
+            if(gp.obj[i] == null){
+                gp.obj[i] = droppedItem;
+                gp.obj[i].worldX = worldX; // noi quai vat chet
+                gp.obj[i].worldY = worldY;
+                break;
+            }
+        }
     }
     public void damageReaction(){}
     public void draw(Graphics2D g2) {
@@ -164,7 +183,7 @@ public abstract class Entity {
         if(dyingCounter>i*5 && dyingCounter <=i*6){changAlpha(g2,1f);}
         if(dyingCounter>i*6 && dyingCounter <=i*7){changAlpha(g2,0f);}
         if(dyingCounter>i*7 && dyingCounter <=i*8){changAlpha(g2,1f);}
-        if(dyingCounter>i*8){dying =false;alive =false;}
+        if(dyingCounter>i*8){alive =false;}
     }
     public void changAlpha(Graphics2D g2, float alphaValue){
         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alphaValue));
@@ -202,19 +221,11 @@ public abstract class Entity {
         gp.cChecker.checkObject(this, false);
         gp.cChecker.checkEntity(this,gp.npc);
         gp.cChecker.checkEntity(this,gp.monster);
+        gp.cChecker.checkEntity(this,gp.iTile);
         boolean contactPlayer = gp.cChecker.checkPlayer(this);
         if(this.type ==type_monster && contactPlayer==true) {
             //check neu monster tan cong nguoi choi
-            if(gp.player.invincible ==false){
-                //gay dame
-                gp.playSE(7);
-                int damage = attack -gp.player.defense;
-                if(damage <0){
-                    damage = 0;
-                }
-                gp.player.life -= damage;
-                gp.player.invincible = true;
-            }
+            damagePlayer(attack);
         }
         if (collisionOn == false) {
             switch (direction) {
@@ -250,6 +261,21 @@ public abstract class Entity {
                 invincible = false;
                 invincibleCounter = 0;
             }
+        }
+        if(shotAvailableCounter < 30){
+            shotAvailableCounter++;
+        }
+    }
+    public void damagePlayer(int attack){
+        if(gp.player.invincible ==false){
+            //gay dame
+            gp.playSE(7);
+            int damage = attack -gp.player.defense;
+            if(damage <0){
+                damage = 0;
+            }
+            gp.player.life -= damage;
+            gp.player.invincible = true;
         }
     }
     public void use(Entity entity){}

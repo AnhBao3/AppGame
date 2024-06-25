@@ -20,10 +20,19 @@ public class OBJ_Heart extends Entity {
 
     public OBJ_Heart(GamePanel gp) {
         super(gp);
+        this.gp = gp;
         name = "Heart";
+        type = type_pickupOnly;
+        value =2;
+        down1 = setup("/res/objects/full_heart",gp.tileSize,gp.tileSize);
         image = setup("/res/objects/full_heart",gp.tileSize,gp.tileSize);
         image2 = setup("/res/objects/half_heart",gp.tileSize,gp.tileSize);
         image3 = setup("/res/objects/blank_heart",gp.tileSize,gp.tileSize);
+    }
+    public void use(Entity entity){
+        gp.playSE(2);
+        gp.ui.addMessage("+ "+value+" Máu");
+        entity.life+=value;
     }
 
 }
