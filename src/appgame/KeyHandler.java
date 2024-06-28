@@ -127,7 +127,9 @@ public class KeyHandler implements KeyListener {
         }
         if (code == KeyEvent.VK_M) {
             gp.stopMusic();
-            //gp.playMusic(5);
+        }
+        if (code== KeyEvent.VK_N) {
+            gp.playMusic(5);
         }
         if (code == KeyEvent.VK_ENTER) {
             enterPressed = true;

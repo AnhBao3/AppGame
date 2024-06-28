@@ -288,6 +288,16 @@ public class UI {
 
         int y = gp.screenHeight / 2;
         g2.drawString(text, x, y);
+
+        g2.setFont(new Font("Arial", Font.PLAIN,20));
+        g2.setColor(Color.white);
+        x =10;
+        y =400;
+        int lineHeight =20;
+        g2.drawString("Mo Iventory: C ",x,y); y+=lineHeight;
+        g2.drawString("Ban Trung: F ",x,y); y+=lineHeight;
+        g2.drawString("Attack: Enter ",x,y); y+=lineHeight;
+
     }
 
     public int getXforCenteredText(String text) {

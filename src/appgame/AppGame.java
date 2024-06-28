@@ -16,7 +16,7 @@ public class AppGame {
             JFrame window = new JFrame();
             window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             window.setResizable(false);
-            window.setTitle("Phieu Luu Cung Cu An");
+            window.setTitle("Phieu Luu Cung Ku An");
             
             GamePanel gamePanel = new GamePanel();
             window.add(gamePanel);

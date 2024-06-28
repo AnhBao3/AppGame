@@ -9,7 +9,7 @@ public class OBJ_Axe extends Entity {
         type = type_axe;
         name = "Rìu sắt";
         down1 = setup("/res/objects/axe",gp.tileSize,gp.tileSize);
-        attackValue = 1;
+        attackValue = 2;
         attackArea.width =30;
         attackArea.height = 30;
         description ="["+ name + "]\ndùng để chặt cây đôi khi \ndùng để đánh nhau";

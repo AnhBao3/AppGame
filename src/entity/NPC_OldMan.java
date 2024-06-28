@@ -60,10 +60,10 @@ public class NPC_OldMan extends Entity {
 
     public void setDialogue() {
         //mãng chứa thông báo
-        dialogues[0] = "hello, kid. NGUYỄN TỜ BẢO BÃO";
-        dialogues[1] = "So you're come to this island to \nfind the treasure?";
-        dialogues[2] = "I used to be a great wizard but now... \nI'm a bit too old for taking an adventure.";
-        dialogues[3] = "Well, good luck to you. ";
+        dialogues[0] = "Em Chao co";
+        dialogues[1] = "demo2";
+        dialogues[2] = "demo3";
+        dialogues[3] = "demo4";
 
     }
 

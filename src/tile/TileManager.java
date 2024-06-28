@@ -73,6 +73,12 @@ public class TileManager {
             setup(39,"earth",false);
             setup(40,"wall",true);
             setup(41,"Tree_1",true);
+            setup(42,"Tree_2",true);
+            setup(43,"Tree_3",true);
+            setup(44,"Tree_4",true);
+            setup(45,"Tree_5",true);
+            setup(46,"Tree_6",true);
+
     }
 public void setup(int index,String imageName, boolean collision){
     UtilityTool uTool = new UtilityTool();
