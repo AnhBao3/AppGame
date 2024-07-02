@@ -4,10 +4,12 @@
  */
 package appgame;
 
+import com.sun.tools.javac.Main;
 import entity.Entity;
 import entity.Player;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,20 +30,28 @@ public class GamePanel extends JPanel implements Runnable {
     final int scale = 3;
 
     public final int tileSize = originalTileSize * scale; // 46x46 size trên màng hình 16x3
-    public final int maxScreenCol = 16;
+    public final int maxScreenCol = 20;
     public final int maxScreenRow = 12; // 16x12
 
-    public final int screenWidth = tileSize * maxScreenCol;  //48 x 16 = 768
+    public final int screenWidth = tileSize * maxScreenCol;  //48 x 20 = 960
     public final int screenHeight = tileSize * maxScreenRow; //48 x 12 = 576
+    //full screen
+    int screenWidth2 = screenWidth;
+    int screenHeight2 = screenHeight;
+    BufferedImage tempScreen;
+    Graphics2D g2;
+    public boolean fullScreenOn = false;
 
     //WORLD SETTING
     public final int maxWorldCol = 50;
     public final int maxWorldRow = 50;
+    public final int maxMap =10;
+    public int currentMap =0;
 
     //FPS
     int FPS = 60;
 
-    TileManager tileM = new TileManager(this);
+    public TileManager tileM = new TileManager(this);
     public KeyHandler keyH = new KeyHandler(this);
 
     //SOUND 
@@ -50,16 +60,18 @@ public class GamePanel extends JPanel implements Runnable {
     public CollisionChecker cChecker = new CollisionChecker(this);
     public AssetSetter aSetter = new AssetSetter(this);
     public EventHandler eHander = new EventHandler(this);
+    config config = new config(this);
     public UI ui = new UI(this);
     Thread gameThread;
 
     //Thực thể và NPC
     public Player player = new Player(this, keyH);
     //Hiển thị 10 đối tượng cùng 1 lúc, VD: khi nhận objA thì objA sẽ mất khỏi màn hình để có thể thêm 1 obj.. vào ô trống
-    public Entity obj[] = new Entity[20];
-    public Entity npc[] = new Entity[10];
-    public InteractiveTile iTile[] = new InteractiveTile[50];
-    public Entity monster[] = new Entity[20];
+    public Entity obj[][] = new Entity[maxMap][20];
+    public Entity npc[][] = new Entity[maxMap][10];
+    public InteractiveTile iTile[][] = new InteractiveTile[maxMap][50];
+    public Entity monster[][] = new Entity[maxMap][20];
+    public ArrayList<Entity> particleList = new ArrayList<>();
     public ArrayList<Entity> projectileList = new ArrayList<>();
     ArrayList<Entity> entiList = new ArrayList<>();//thực thể lớn
 
@@ -71,6 +83,10 @@ public class GamePanel extends JPanel implements Runnable {
     public final int pauseState = 2;
     public final int dialogueState = 3;
     public final int characterState = 4;
+    public final int optionState = 5;
+    public final int gameOverState =6;
+    public final int transitionState =7;
+    public final int tradeState =8;
 
     public GamePanel() {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
@@ -126,7 +142,8 @@ public class GamePanel extends JPanel implements Runnable {
             lastTime = currentTime;
             if (delta >= 1) {
                 update();
-                repaint();
+                drawToTempScreen();
+                drawToScreen();
                 delta--;
                 drawCount++;
             }
@@ -145,19 +162,19 @@ public class GamePanel extends JPanel implements Runnable {
             player.update();
 
             //NOC
-            for (int i = 0; i < npc.length; i++) {
-                if (npc[i] != null) {
-                    npc[i].update();
+            for (int i = 0; i < npc[1].length; i++) {
+                if (npc[currentMap][i] != null) {
+                    npc[currentMap][i].update();
                 }
             }
-            for(int i=0;i<monster.length;i++) {
-                if(monster[i] != null) {
-                    if(monster[i].alive ==true && monster[i].dying == false){
-                        monster[i].update();
+            for(int i=0;i<monster[1].length;i++) {
+                if(monster[currentMap][i] != null) {
+                    if(monster[currentMap][i].alive ==true && monster[currentMap][i].dying == false){
+                        monster[currentMap][i].update();
                     }
-                    if(monster[i].alive ==false){
-                        monster[i].checkDrop();
-                        monster[i] = null;
+                    if(monster[currentMap][i].alive ==false){
+                        monster[currentMap][i].checkDrop();
+                        monster[currentMap][i] = null;
                     }
                 }
             }
@@ -171,9 +188,19 @@ public class GamePanel extends JPanel implements Runnable {
                     }
                 }
             }
-            for(int i=0;i<iTile.length;i++){
-                if(iTile[i] != null) {
-                    iTile[i].update();
+            for(int i=0;i<particleList.size();i++) {
+                if(particleList.get(i) != null) {
+                    if(particleList.get(i).alive ==true){
+                        particleList.get(i).update();
+                    }
+                    if(particleList.get(i).alive==false){
+                        particleList.remove(i);
+                    }
+                }
+            }
+            for(int i=0;i<iTile[1].length;i++){
+                if(iTile[currentMap][i] != null) {
+                    iTile[currentMap][i].update();
                 }
             }
         }
@@ -182,49 +209,84 @@ public class GamePanel extends JPanel implements Runnable {
         }
     }
 
-    public void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        Graphics2D g2 = (Graphics2D) g;
 
+    public void setupGame() {
+        //set ob
+        aSetter.setObject();
+        aSetter.setNPC();
+        aSetter.setMonster();
+        aSetter.setInteractiveTile();
+        //set nhạc nền
+        gameState = titleState;
+
+        tempScreen = new BufferedImage(screenWidth,screenHeight,BufferedImage.TYPE_INT_ARGB);
+        g2 = (Graphics2D) tempScreen.getGraphics();
+        if(fullScreenOn==true){
+            setFullScreen();
+        }
+    }
+    public void retry(){
+        player.setDefaultPostions();
+        player.restoreLifeAndMana();
+        aSetter.setNPC();
+        aSetter.setMonster();
+    }
+    public void restart(){
+        player.setDefaultValues();
+        player.setDefaultPostions();
+        player.restoreLifeAndMana();
+        player.setItems();
+        aSetter.setInteractiveTile();
+        aSetter.setObject();
+        aSetter.setNPC();
+        aSetter.setMonster();
+    }
+    public void drawToTempScreen(){
         long drawStart = 0;
         if(keyH.showDebugTex ==true){
             drawStart = System.nanoTime();
         }
 
         if (gameState == titleState) {
-                ui.draw(g2);
+            ui.draw(g2);
         } else {
             //tile
             tileM.draw(g2);
             //tile interactive
-            for(int i=0;i<iTile.length;i++){
-                if(iTile[i]!=null){
-                    iTile[i].draw(g2);
+            for(int i=0;i<iTile[1].length;i++){
+                if(iTile[currentMap][i]!=null){
+                    iTile[currentMap][i].draw(g2);
                 }
             }
 
             //add vaào danh sach lơn
             entiList.add(player);
-            for(int i =0;i<npc.length;i++){
-                if(npc[i]!=null){
-                    entiList.add(npc[i]);
+            for(int i =0;i<npc[1].length;i++){
+                if(npc[currentMap][i]!=null){
+                    entiList.add(npc[currentMap][i]);
                 }
             }
-            for(int i =0;i<obj.length;i++){
-                if(obj[i]!=null){
-                    entiList.add(obj[i]);
+            for(int i =0;i<obj[1].length;i++){
+                if(obj[currentMap][i]!=null){
+                    entiList.add(obj[currentMap][i]);
                 }
             }
 
-            for(int i =0;i<monster.length;i++){
-                if(monster[i]!=null){
-                    entiList.add(monster[i]);
+            for(int i =0;i<monster[1].length;i++){
+                if(monster[currentMap][i]!=null){
+                    entiList.add(monster[currentMap][i]);
                 }
             }
 
             for(int i =0;i<projectileList.size();i++){
                 if(projectileList.get(i)!=null){
                     entiList.add(projectileList.get(i));
+                }
+            }
+
+            for(int i =0;i<particleList.size();i++){
+                if(particleList.get(i)!=null){
+                    entiList.add(particleList.get(i));
                 }
             }
 
@@ -261,21 +323,24 @@ public class GamePanel extends JPanel implements Runnable {
                 g2.drawString("Row: "+(player.worldY + player.solidArea.y)/tileSize,x,y); y+=lineHeight;
                 g2.drawString("Draw Time: "+passed,x,y);
             }
-            g2.dispose();
         }
 
     }
-
-    public void setupGame() {
-        //set ob
-        aSetter.setObject();
-        aSetter.setNPC();
-        aSetter.setMonster();
-        aSetter.setInteractiveTile();
-        //set nhạc nền
-        gameState = titleState;
+    public void drawToScreen(){
+        Graphics g = getGraphics();
+        g.drawImage(tempScreen,0,0,screenWidth2,screenHeight2,null);
+        g.dispose();
     }
-    
+    public void setFullScreen(){
+        //Lay thong tin cua man hinh
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice gd = ge.getDefaultScreenDevice();
+        gd.setFullScreenWindow(AppGame.window);
+
+        //lay chieu rong va chieu dai cua mang hinh
+        screenWidth2 = AppGame.window.getWidth();
+        screenHeight2 = AppGame.window.getHeight();
+    }
     public void playMusic(int i) {
         music.setFile(i);
         music.play();

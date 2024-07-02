@@ -11,15 +11,20 @@ import javax.swing.JFrame;
  * @author Admin
  */
 public class AppGame {
+        public static JFrame window;
     public static void main(String[] args) {
-            //LOZ GIT HUB
-            JFrame window = new JFrame();
+
+            window = new JFrame();
             window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             window.setResizable(false);
             window.setTitle("Phieu Luu Cung Ku An");
-            
+
             GamePanel gamePanel = new GamePanel();
             window.add(gamePanel);
+            gamePanel.config.loadconfig();
+            if(gamePanel.fullScreenOn==true){
+                    window.setUndecorated(true);
+            }
             
             window.pack();
             

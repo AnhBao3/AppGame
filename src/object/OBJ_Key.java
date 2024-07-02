@@ -20,5 +20,6 @@ public class OBJ_Key extends Entity {
         name = "Chìa khóa";
         down1 = setup("/res/objects/key",gp.tileSize,gp.tileSize);
         description ="["+ name + "]\ndùng để mở cửa";
+        price = 50;
     }
 }

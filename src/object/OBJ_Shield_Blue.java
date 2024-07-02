@@ -9,7 +9,8 @@ public class OBJ_Shield_Blue extends Entity {
         type = type_shield;
         name = "Khiên doran";
         down1 = setup("/res/objects/shield_gold",gp.tileSize,gp.tileSize);
-        defenderValue = 2;
+        defenderValue = 200;
         description ="["+ name + "]\nkhiên xịn loại mới tinh!";
+        price = 250;
     }
 }

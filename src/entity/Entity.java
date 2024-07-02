@@ -10,6 +10,7 @@ import appgame.UtilityTool;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
 import javax.imageio.ImageIO;
 
 /**
@@ -66,10 +67,12 @@ public abstract class Entity {
     public Projectile projectile;
 
     //thuoc tinh cua do vat
+    public ArrayList<Entity> inventory = new ArrayList<Entity>();
     public int value;
     public int attackValue;
     public int defenderValue;
     public int useCost;
+    public int price;
 
     //type
     public int type;
@@ -99,11 +102,11 @@ public abstract class Entity {
     }
     public void checkDrop(){}
     public void dropIem(Entity droppedItem){
-        for(int i=0;i<gp.obj.length;i++){
-            if(gp.obj[i] == null){
-                gp.obj[i] = droppedItem;
-                gp.obj[i].worldX = worldX; // noi quai vat chet
-                gp.obj[i].worldY = worldY;
+        for(int i=0;i<gp.obj[1].length;i++){
+            if(gp.obj[gp.currentMap][i] == null){
+                gp.obj[gp.currentMap][i] = droppedItem;
+                gp.obj[gp.currentMap][i].worldX = worldX; // noi quai vat chet
+                gp.obj[gp.currentMap][i].worldY = worldY;
                 break;
             }
         }
@@ -265,6 +268,36 @@ public abstract class Entity {
         if(shotAvailableCounter < 30){
             shotAvailableCounter++;
         }
+    }
+    public Color getParticleColor(){
+        Color color = null;
+        return color;
+    }
+    public int getParticleSize(){
+        int size = 0; //6 pixel
+        return size;
+    }
+    public int getParticleSpeed(){
+        int speed = 0;
+        return speed;
+    }
+    public int getParticleMaxLife(){
+        int maxLife =0;
+        return maxLife;
+    }
+    public void generateParticle(Entity generator, Entity target){
+        Color color = generator.getParticleColor();
+        int size = generator.getParticleSize();
+        int speed = generator.getParticleSpeed();
+        int maxLife = generator.getParticleMaxLife();
+        Particle p1 = new Particle(gp,target,color,size,speed,maxLife,-2,-1);
+        Particle p2 = new Particle(gp,target,color,size,speed,maxLife,2,-1);
+        Particle p3 = new Particle(gp,target,color,size,speed,maxLife,-2,1);
+        Particle p4 = new Particle(gp,target,color,size,speed,maxLife,2,1);
+        gp.particleList.add(p1);
+        gp.particleList.add(p2);
+        gp.particleList.add(p3);
+        gp.particleList.add(p4);
     }
     public void damagePlayer(int attack){
         if(gp.player.invincible ==false){

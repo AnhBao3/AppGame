@@ -13,5 +13,6 @@ public class OBJ_Axe extends Entity {
         attackArea.width =30;
         attackArea.height = 30;
         description ="["+ name + "]\ndùng để chặt cây đôi khi \ndùng để đánh nhau";
+        price = 75;
     }
 }

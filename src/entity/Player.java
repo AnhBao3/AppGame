@@ -22,7 +22,6 @@ public class Player extends Entity {
     public final int screenX;
     public final int screenY;
     public boolean attackCanceled = false;
-    public ArrayList<Entity> inventory = new ArrayList<Entity>();
     public final int maxInventorySize = 20;
 
     public Player(GamePanel gp, KeyHandler keyH) {
@@ -49,8 +48,11 @@ public class Player extends Entity {
     }
 
     public void setDefaultValues() {
-        worldX = gp.tileSize * 23;
-        worldY = gp.tileSize * 21;
+//        worldX = gp.tileSize * 23;
+//        worldY = gp.tileSize * 21;
+        worldX = gp.tileSize * 12;
+        worldY = gp.tileSize * 12;
+        gp.currentMap = 1;
         speed = 4;
         direction = "down";
 
@@ -63,7 +65,7 @@ public class Player extends Entity {
         ammo = 10;
         dexterity = 1;
         nextLevelExp = 5;
-        coin = 0;
+        coin = 500;
         maxMana = 4;
         mana = maxMana;
         currentWeapon = new OBJ_Sword_Normal(gp);
@@ -74,7 +76,18 @@ public class Player extends Entity {
         attack = getAttack();
         defense = getDefense();
     }
+    public void setDefaultPostions(){
+        worldX = gp.tileSize * 23;
+        worldY = gp.tileSize * 21;
+        direction = "down";
+    }
+    public void restoreLifeAndMana(){
+        life = maxLife;
+        mana = maxMana;
+        invincible = false;
+    }
     public void setItems(){
+        inventory.clear();
         inventory.add(currentWeapon);
         inventory.add(currentSheld);
         inventory.add(new OBJ_Key(gp));
@@ -97,7 +110,6 @@ public class Player extends Entity {
         right1 = setup("/res/player/boy_right_1", gp.tileSize, gp.tileSize);
         right2 = setup("/res/player/boy_right_2", gp.tileSize, gp.tileSize);
     }
-
     public void getPlayerAttackImage() {
         if(currentWeapon.type == type_sword){
             attackUp1 = setup("/res/player/boy_attack_up_1", gp.tileSize, gp.tileSize * 2);
@@ -120,7 +132,6 @@ public class Player extends Entity {
           attackRight2 = setup("/res/player/boy_attack_axe_right_2", gp.tileSize * 2, gp.tileSize);
       }
     }
-
     public void update() {
         if (attacking == true) {
             attacking();
@@ -137,7 +148,7 @@ public class Player extends Entity {
             }
             //check va chạm
             collisionOn = false;
-            gp.cChecker.checkTile(this);
+            //gp.cChecker.checkTile(this);
 
             // check va cham với obj
             int objIndex = gp.cChecker.checkObject(this, true);
@@ -220,11 +231,15 @@ public class Player extends Entity {
         if(mana>maxMana){
             mana=maxMana;
         }
+        if(life<=0){
+            gp.gameState = gp.gameOverState;
+            gp.ui.commandNum =-1;
+            gp.playSE(14);
+            gp.stopMusic();
+        }
         // trong java X sẽ là đại diện cho đi vào bên phải, và Y là đi xuống
 
     }
-
-
     public void attacking() {
         spriteCounter++;
         if (spriteCounter <= 5) {
@@ -274,42 +289,44 @@ public class Player extends Entity {
         }
     }
     public void damageInteractiveTile(int i){
-        if(i!=999 && gp.iTile[i].destructible == true
-                && gp.iTile[i].isCorrectItem(this)==true && gp.iTile[i].invincible ==false ){
-            gp.iTile[i].playSE();
-            gp.iTile[i].life--;
-            gp.iTile[i].invincible = true;
-            if(gp.iTile[i].life ==0){
-                gp.iTile[i] = gp.iTile[i].getDestroyedFrom();
+        if(i!=999 && gp.iTile[gp.currentMap][i].destructible == true
+                && gp.iTile[gp.currentMap][i].isCorrectItem(this)==true && gp.iTile[gp.currentMap][i].invincible ==false ){
+            gp.iTile[gp.currentMap][i].playSE();
+            gp.iTile[gp.currentMap][i].life--;
+            gp.iTile[gp.currentMap][i].invincible = true;
+            //generateParticle
+            generateParticle(gp.iTile[gp.currentMap][i],gp.iTile[gp.currentMap][i]);
+            if(gp.iTile[gp.currentMap][i].life ==0){
+                gp.iTile[gp.currentMap][i] = gp.iTile[gp.currentMap][i].getDestroyedFrom();
             }
         }
     }
     public void damageMonster(int i, int attack) {
         if (i != 999) {
-            if(gp.monster[i].invincible == false){
+            if(gp.monster[gp.currentMap][i].invincible == false){
                 //dame gay len monster
                 gp.playSE(6);
 
-                int damage = attack -gp.monster[i].defense;
+                int damage = attack -gp.monster[gp.currentMap][i].defense;
                 if(damage <0){
                     damage = 0;
                 }
-                gp.monster[i].life -=damage;
+                gp.monster[gp.currentMap][i].life -=damage;
                 gp.ui.addMessage(damage + " Sát thương!");
-                gp.monster[i].invincible =true;
-                gp.monster[i].damageReaction();
-                if(gp.monster[i].life <=0){
-                    gp.monster[i].dying =true;
-                    gp.ui.addMessage("Hạ gục " + gp.monster[i].name+"!");
-                    gp.ui.addMessage("Kinh nghiệm +" + gp.monster[i].exp);
-                    exp += gp.monster[i].exp;
+                gp.monster[gp.currentMap][i].invincible =true;
+                gp.monster[gp.currentMap][i].damageReaction();
+                if(gp.monster[gp.currentMap][i].life <=0){
+                    gp.monster[gp.currentMap][i].dying =true;
+                    gp.ui.addMessage("Hạ gục " + gp.monster[gp.currentMap][i].name+"!");
+                    gp.ui.addMessage("Kinh nghiệm +" + gp.monster[gp.currentMap][i].exp);
+                    exp += gp.monster[gp.currentMap][i].exp;
                     checkLevelUp();
                 }
             }
         }
     }
     public void selectItem(){
-        int itemIndex = gp.ui.getItemIndexOnSlot();
+        int itemIndex = gp.ui.getItemIndexOnSlot(gp.ui.playerSlotCol,gp.ui.playerSlotRow);
 
         if(itemIndex < inventory.size()){
             Entity selectedItem = inventory.get(itemIndex);
@@ -345,9 +362,9 @@ public class Player extends Entity {
     }
     private void contactMonster(int i) {
         if (i != 999) {
-            if (invincible == false && gp.monster[i].dying == false) {
+            if (invincible == false && gp.monster[gp.currentMap][i].dying == false) {
                 gp.playSE(7);
-                int damage = gp.monster[i].attack -defense;
+                int damage = gp.monster[gp.currentMap][i].attack -defense;
                 if(damage <0){
                     damage = 0;
                 }
@@ -422,23 +439,23 @@ public class Player extends Entity {
         ///999 là ko đụng phải obj
         if (i != 999) {
             //pick coin
-            if(gp.obj[i].type == type_pickupOnly){
-                gp.obj[i].use(this);
-                gp.obj[i] = null;
+            if(gp.obj[gp.currentMap][i].type == type_pickupOnly){
+                gp.obj[gp.currentMap][i].use(this);
+                gp.obj[gp.currentMap][i] = null;
             }
             //pick va add vao inven
             else {
                 String text;
                 if(inventory.size() != maxInventorySize){
-                    inventory.add(gp.obj[i]); // them vao inventory!
+                    inventory.add(gp.obj[gp.currentMap][i]); // them vao inventory!
                     gp.playSE(1);
-                    text = "Nhận " + gp.obj[i].name + "!";
+                    text = "Nhận " + gp.obj[gp.currentMap][i].name + "!";
                 }
                 else {
                     text = "Full đồ !";
                 }
                 gp.ui.addMessage(text);
-                gp.obj[i] = null;
+                gp.obj[gp.currentMap][i] = null;
             }
         }
     }
@@ -447,7 +464,7 @@ public class Player extends Entity {
             if (i != 999) {
                 attackCanceled = true;
                 gp.gameState = gp.dialogueState;
-                gp.npc[i].speak();
+                gp.npc[gp.currentMap][i].speak();
             }
         }
     }

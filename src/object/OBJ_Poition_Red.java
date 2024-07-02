@@ -14,6 +14,7 @@ public class OBJ_Poition_Red extends Entity {
         down1 = setup("/res/objects/bottle_red",gp.tileSize,gp.tileSize);
         defenderValue = 5;
         description ="["+ name + "]\ndùng để hồi "+ value +" máu";
+        price = 75;
     }
     public void use(Entity e) {
         //xu ly xem obj nay se lam gi

@@ -5,6 +5,8 @@
 package entity;
 
 import appgame.GamePanel;
+
+import java.awt.*;
 import java.util.Random;
 
 /**
@@ -17,6 +19,13 @@ public class NPC_OldMan extends Entity {
         super(gp);
         direction = "down";
         speed = 1;// tốc độ
+        solidArea = new Rectangle();
+        solidArea.x =9;
+        solidArea.y =16;
+        solidAreaDefaultX = solidArea.x;
+        solidAreaDefaultY = solidArea.y;
+        solidArea.width = 32;
+        solidArea.height = 32;
         getImage();
         setDialogue(); //test
     }
