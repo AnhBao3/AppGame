@@ -42,31 +42,41 @@ public class NPC_OldMan extends Entity {
         right2 = setup("/res/npc/oldman_right_2",gp.tileSize,gp.tileSize);
     }
     public void setAction() {
+        if(onPath ==true){
 
-        actionLockCounter++;
-
-        if (actionLockCounter == 120) {
-            Random random = new Random();
-            int a = 10;
-            int i = random.nextInt(200) + 1; // chọn những con só ngầu nhên từ 1 - 100
-            if (i <= 25-a) {
-                direction = "up";
-            }
-            if (i > 25-a && i <= 50-a) {
-                direction = "down";
-            }
-            if (i > 50-a && i <= 75-a) {
-                direction = "left";
-            }
-            if (i > 75-a && i <= 100-a) {
-                direction = "right";
-            }
-            actionLockCounter = 0;
-            //mỗi 120 khung hình thì nó mới đổi hướng duy chuyển của NPC
+//            int goalCol = 12;
+//            int goalRow = 9;
+            int goalCol = (gp.player.worldX + gp.player.solidArea.x)/gp.tileSize;
+            int goalRow = (gp.player.worldY + gp.player.solidArea.y)/gp.tileSize;
+            searchPath(goalCol,goalRow);
         }
+        else {
+            actionLockCounter++;
+
+            if (actionLockCounter == 120) {
+                Random random = new Random();
+                int a = 10;
+                int i = random.nextInt(200) + 1; // chọn những con só ngầu nhên từ 1 - 100
+                if (i <= 25-a) {
+                    direction = "up";
+                }
+                if (i > 25-a && i <= 50-a) {
+                    direction = "down";
+                }
+                if (i > 50-a && i <= 75-a) {
+                    direction = "left";
+                }
+                if (i > 75-a && i <= 100-a) {
+                    direction = "right";
+                }
+                actionLockCounter = 0;
+                //mỗi 120 khung hình thì nó mới đổi hướng duy chuyển của NPC
+            }
+        }
+    }
+    public void searchPath(){
 
     }
-
     public void setDialogue() {
         //mãng chứa thông báo
         dialogues[0] = "Em Chao co";
@@ -78,5 +88,6 @@ public class NPC_OldMan extends Entity {
 
     public void speak() {
             super.speak();
+           onPath =true;
     }
 }

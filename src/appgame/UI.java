@@ -24,7 +24,7 @@ public class UI {
     Font fontPixel;
     GamePanel gp;
     Graphics2D g2;
-    Font arial_40, arial_80B;
+    public Font arial_40, arial_80B;
     //BufferedImage KeyImage;
     ArrayList<String> message = new ArrayList<>();
     ArrayList<Integer> messageCounter = new ArrayList<>();
@@ -45,8 +45,8 @@ public class UI {
 
     public UI(GamePanel gp) {
         this.gp = gp;
-        //arial_40 = new Font("Arial", Font.PLAIN, 40);
-        //arial_80B = new Font("Arial", Font.BOLD, 80);
+        arial_40 = new Font("Arial", Font.PLAIN, 40);
+        arial_80B = new Font("Arial", Font.BOLD, 80);
 
         InputStream is = getClass().getResourceAsStream("/res/font/FVF Fernando 08.ttf");
         try {
@@ -107,6 +107,30 @@ public class UI {
         }
         if(gp.gameState == gp.tradeState){
             drawTradeScreen();
+        }
+        if(gp.gameState==gp.sleepState){
+            drawSleepScreen();
+        }
+    }
+
+    public void drawSleepScreen() {
+        counter++;
+        if(counter<120){
+            gp.eManager.lighting.fillterAlpha+=0.01f;
+            if(gp.eManager.lighting.fillterAlpha>1f){
+                gp.eManager.lighting.fillterAlpha=1f;
+            }
+        }
+        if(counter>=120){
+            gp.eManager.lighting.fillterAlpha-=0.01f;
+            if(gp.eManager.lighting.fillterAlpha<=0f){
+                gp.eManager.lighting.fillterAlpha=0f;
+                counter=0;
+                gp.eManager.lighting.dayState=gp.eManager.lighting.day;
+                gp.eManager.lighting.dayCounter=0;
+                gp.gameState = gp.playState;
+                gp.player.getPlayerImage();
+            }
         }
     }
 
@@ -202,15 +226,15 @@ public class UI {
                     currentDialogue ="Không đủ tiền!";
                     drawDialogueScreeen();
                 }
-                else if(gp.player.inventory.size()==gp.player.maxInventorySize){
+                else {
+                    if(gp.player.canObtainItem(npc.inventory.get(itemIndex)) == true){
+                        gp.player.coin -= npc.inventory.get(itemIndex).price;
+                    }
+                    else {
                     subState =0;
                     gp.gameState = gp.dialogueState;
                     currentDialogue ="Không đủ chỗ chứa!";
-                    drawDialogueScreeen();
-                }
-                else{
-                    gp.player.coin -= npc.inventory.get(itemIndex).price;
-                    gp.player.inventory.add(npc.inventory.get(itemIndex));
+                    }
                 }
             }
         }
@@ -259,7 +283,13 @@ public class UI {
                     currentDialogue ="Không thể bán";
                 }
                 else {
-                    gp.player.inventory.remove(itemIndex);
+                    if(gp.player.inventory.get(itemIndex).amount > 1){
+                        gp.player.inventory.get(itemIndex).amount --;
+                    }
+                    else {
+                        gp.player.inventory.remove(itemIndex);
+
+                    }
                     gp.player.coin+=price;
                 }
             }
@@ -352,12 +382,34 @@ public class UI {
         int slotSize = gp.tileSize+3;
         // draw player item
         for(int i =0;i<entity.inventory.size();i++){
+
+
             if(entity.inventory.get(i) == entity.currentWeapon ||
-                    entity.inventory.get(i)==entity.currentSheld){
+                    entity.inventory.get(i)==entity.currentSheld ||
+            entity.inventory.get(i) == entity.currentLight){
                 g2.setColor(new Color(231, 76, 60));
                 g2.fillRoundRect(slotX,slotY,gp.tileSize,gp.tileSize,10,10);
             }
             g2.drawImage(entity.inventory.get(i).down1,slotX,slotY,null);
+
+            if(entity.inventory.get(i).amount>1){
+                g2.setFont(g2.getFont().deriveFont(16f));
+                int amountX;
+                int amountY;
+
+                String a = "" +  entity.inventory.get(i).amount;
+                amountX = getXforAlignToRightText(a,slotX+44);
+                amountY = slotY + gp.tileSize;
+
+                //shadow
+                g2.setColor(new Color(60, 60, 60));
+                g2.drawString(a,amountX,amountY);
+                //number
+                g2.setColor(Color.white);
+                g2.drawString(a,amountX-3,amountY);
+
+            }
+
             slotX += slotSize;
             if(i == 4 || i == 9 || i == 14){
                 slotX = slotXstart;

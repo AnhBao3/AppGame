@@ -4,6 +4,7 @@
  */
 package appgame;
 
+import ai.PathFinder;
 import com.sun.tools.javac.Main;
 import entity.Entity;
 import entity.Player;
@@ -16,6 +17,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import javax.swing.JPanel;
 
+import enviroment.EnviromentManager;
+import tile.Map;
 import tile.TileManager;
 import tile_interactive.InteractiveTile;
 
@@ -62,6 +65,8 @@ public class GamePanel extends JPanel implements Runnable {
     public EventHandler eHander = new EventHandler(this);
     config config = new config(this);
     public UI ui = new UI(this);
+    public PathFinder pFinder = new PathFinder(this);
+    EnviromentManager eManager = new EnviromentManager(this);
     Thread gameThread;
 
     //Thực thể và NPC
@@ -72,8 +77,10 @@ public class GamePanel extends JPanel implements Runnable {
     public InteractiveTile iTile[][] = new InteractiveTile[maxMap][50];
     public Entity monster[][] = new Entity[maxMap][20];
     public ArrayList<Entity> particleList = new ArrayList<>();
-    public ArrayList<Entity> projectileList = new ArrayList<>();
+    public Entity projectile[][] = new Entity[maxMap][20];
+    //public ArrayList<Entity> projectileList = new ArrayList<>();
     ArrayList<Entity> entiList = new ArrayList<>();//thực thể lớn
+    Map map = new Map(this);
 
 
     //Trạng thái game có thể là đang ở menu, có thể là đang ở trong game
@@ -87,6 +94,8 @@ public class GamePanel extends JPanel implements Runnable {
     public final int gameOverState =6;
     public final int transitionState =7;
     public final int tradeState =8;
+    public final int sleepState =9;
+    public final int mapState =10;
 
     public GamePanel() {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
@@ -178,13 +187,13 @@ public class GamePanel extends JPanel implements Runnable {
                     }
                 }
             }
-            for(int i=0;i<projectileList.size();i++) {
-                if(projectileList.get(i) != null) {
-                    if(projectileList.get(i).alive ==true){
-                        projectileList.get(i).update();
+            for(int i=0;i<projectile[1].length;i++) {
+                if(projectile[currentMap][i] != null) {
+                    if(projectile[currentMap][i].alive ==true){
+                        projectile[currentMap][i].update();
                     }
-                    if(projectileList.get(i).alive==false){
-                        projectileList.remove(i);
+                    if(projectile[currentMap][i].alive==false){
+                        projectile[currentMap][i] = null;
                     }
                 }
             }
@@ -203,6 +212,7 @@ public class GamePanel extends JPanel implements Runnable {
                     iTile[currentMap][i].update();
                 }
             }
+            eManager.update();
         }
         if (gameState == pauseState) {
             // chưa làm gì
@@ -216,6 +226,7 @@ public class GamePanel extends JPanel implements Runnable {
         aSetter.setNPC();
         aSetter.setMonster();
         aSetter.setInteractiveTile();
+        eManager.setup();
         //set nhạc nền
         gameState = titleState;
 
@@ -249,7 +260,12 @@ public class GamePanel extends JPanel implements Runnable {
 
         if (gameState == titleState) {
             ui.draw(g2);
-        } else {
+        }
+        //map
+        else if(gameState==mapState){
+            map.drawFullMapScreen(g2);
+        }
+        else {
             //tile
             tileM.draw(g2);
             //tile interactive
@@ -278,9 +294,9 @@ public class GamePanel extends JPanel implements Runnable {
                 }
             }
 
-            for(int i =0;i<projectileList.size();i++){
-                if(projectileList.get(i)!=null){
-                    entiList.add(projectileList.get(i));
+            for(int i =0;i<projectile[1].length;i++){
+                if(projectile[currentMap][i]!=null){
+                    entiList.add(projectile[currentMap][i]);
                 }
             }
 
@@ -304,10 +320,14 @@ public class GamePanel extends JPanel implements Runnable {
             }
             //empty entity list
             entiList.clear();
-
             player.draw(g2);
+            eManager.draw(g2);
             //UI
+            //mini map
+            map.drawMiniMap(g2);
             ui.draw(g2);
+
+
 
             if(keyH.showDebugTex == true){
                 long drawEnd = System.nanoTime();

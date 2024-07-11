@@ -14,9 +14,10 @@ public class OBJ_Mana extends Entity {
         image = setup("/res/objects/mana",gp.tileSize,gp.tileSize);
         image2 = setup("/res/objects/mananull",gp.tileSize,gp.tileSize);
     }
-    public void use(Entity entity){
+    public boolean use(Entity entity){
         gp.playSE(2);
         gp.ui.addMessage("+ "+value+" Năng lượng");
         entity.mana+=value;
+        return true;
     }
 }

@@ -15,12 +15,14 @@ public class OBJ_Poition_Red extends Entity {
         defenderValue = 5;
         description ="["+ name + "]\ndùng để hồi "+ value +" máu";
         price = 75;
+        stackable = true;
     }
-    public void use(Entity e) {
+    public boolean use(Entity e) {
         //xu ly xem obj nay se lam gi
         gp.gameState = gp.dialogueState;
         gp.ui.currentDialogue = "Dùng "+ name + ", được hồi "+value +" máu";
         e.life +=value;
         gp.playSE(2);
+        return true;
     }
 }

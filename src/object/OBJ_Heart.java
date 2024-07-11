@@ -29,10 +29,11 @@ public class OBJ_Heart extends Entity {
         image2 = setup("/res/objects/half_heart",gp.tileSize,gp.tileSize);
         image3 = setup("/res/objects/blank_heart",gp.tileSize,gp.tileSize);
     }
-    public void use(Entity entity){
+    public boolean use(Entity entity){
         gp.playSE(2);
         gp.ui.addMessage("+ "+value+" Máu");
         entity.life+=value;
+        return true;
     }
 
 }

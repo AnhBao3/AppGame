@@ -23,6 +23,7 @@ public class Player extends Entity {
     public final int screenY;
     public boolean attackCanceled = false;
     public final int maxInventorySize = 20;
+    public boolean lightUpdated = false;
 
     public Player(GamePanel gp, KeyHandler keyH) {
         super(gp);
@@ -50,10 +51,11 @@ public class Player extends Entity {
     public void setDefaultValues() {
 //        worldX = gp.tileSize * 23;
 //        worldY = gp.tileSize * 21;
-        worldX = gp.tileSize * 12;
-        worldY = gp.tileSize * 12;
-        gp.currentMap = 1;
-        speed = 4;
+        worldX = gp.tileSize * 21;
+        worldY = gp.tileSize * 20;
+        gp.currentMap = 0;
+        defaultSpeed = 4;
+        speed = defaultSpeed;
         direction = "down";
 
         //trạng thái người chơi
@@ -92,6 +94,11 @@ public class Player extends Entity {
         inventory.add(currentSheld);
         inventory.add(new OBJ_Key(gp));
     }
+    public void knockBack(Entity entity, int knockBackPower){
+        entity.direction = direction;
+        entity.speed+=knockBackPower;
+        entity.knockBack = true;
+    }
     public int getAttack(){
         attackArea = currentWeapon.attackArea;
         return attack = strength * currentWeapon.attackValue;
@@ -109,6 +116,16 @@ public class Player extends Entity {
         left2 = setup("/res/player/boy_left_2", gp.tileSize, gp.tileSize);
         right1 = setup("/res/player/boy_right_1", gp.tileSize, gp.tileSize);
         right2 = setup("/res/player/boy_right_2", gp.tileSize, gp.tileSize);
+    }
+    public void getSleepingImage(BufferedImage image){
+        up1 = image;
+        up2 = image;
+        down1 = image;
+        down2 = image;
+        left1 = image;
+        left2 = image;
+        right1 = image;
+        right2 = image;
     }
     public void getPlayerAttackImage() {
         if(currentWeapon.type == type_sword){
@@ -148,7 +165,7 @@ public class Player extends Entity {
             }
             //check va chạm
             collisionOn = false;
-            //gp.cChecker.checkTile(this);
+            gp.cChecker.checkTile(this);
 
             // check va cham với obj
             int objIndex = gp.cChecker.checkObject(this, true);
@@ -216,10 +233,15 @@ public class Player extends Entity {
 
             //
             projectile.subtractResource(this);
-            gp.projectileList.add(projectile);
 
+            for(int i=0;i<gp.projectile[1].length;i++){
+                if(gp.projectile[gp.currentMap][i]==null){
+                    gp.projectile[gp.currentMap][i] = projectile;
+                    break;
+                }
+            }
             shotAvailableCounter=0;
-            
+
             gp.playSE(12);
         }
         if(shotAvailableCounter < 30){
@@ -272,10 +294,13 @@ public class Player extends Entity {
             solidArea.height = attackArea.height;
             //check va cham voi quai vat sau khi up date vi tri
             int monsterIndex = gp.cChecker.checkEntity(this, gp.monster);
-            damageMonster(monsterIndex,attack);
+            damageMonster(monsterIndex,attack,currentWeapon.knockBackPower);
 
             int iTileIndex = gp.cChecker.checkEntity(this,gp.iTile);
             damageInteractiveTile(iTileIndex);
+
+            int projecttileIndex = gp.cChecker.checkEntity(this,gp.projectile);
+            damageProjectile(projecttileIndex);
 
             worldX = currentWorldX;
             worldY = currentWorldY;
@@ -288,6 +313,15 @@ public class Player extends Entity {
             attacking = false;
         }
     }
+
+    public void damageProjectile(int i) {
+        if(i!=999){
+            Entity projectile = gp.projectile[gp.currentMap][i];
+            projectile.alive = false;
+            generateParticle(projectile,projectile);
+        }
+    }
+
     public void damageInteractiveTile(int i){
         if(i!=999 && gp.iTile[gp.currentMap][i].destructible == true
                 && gp.iTile[gp.currentMap][i].isCorrectItem(this)==true && gp.iTile[gp.currentMap][i].invincible ==false ){
@@ -301,12 +335,14 @@ public class Player extends Entity {
             }
         }
     }
-    public void damageMonster(int i, int attack) {
+    public void damageMonster(int i, int attack,int knockBackPower) {
         if (i != 999) {
             if(gp.monster[gp.currentMap][i].invincible == false){
                 //dame gay len monster
                 gp.playSE(6);
-
+                if(knockBackPower>0){
+                    knockBack(gp.monster[gp.currentMap][i],knockBackPower);
+                }
                 int damage = attack -gp.monster[gp.currentMap][i].defense;
                 if(damage <0){
                     damage = 0;
@@ -340,12 +376,28 @@ public class Player extends Entity {
                 currentSheld = selectedItem;
                 defense = getDefense();
             }
+            if(selectedItem.type == type_light){
+                if(currentLight==selectedItem){
+                    currentLight = null;
+                }
+                else {
+                    currentLight = selectedItem;
+                }
+                lightUpdated = true;
+            }
             if(selectedItem.type == type_consumable){
-                selectedItem.use(this);
-                inventory.remove(itemIndex);
+                if(selectedItem.use(this) == true){
+                    if (selectedItem.amount > 1) {
+                        selectedItem.amount--;
+                    }
+                    else {
+                        inventory.remove(itemIndex);
+                    }
+                }
             }
         }
     }
+
     public void checkLevelUp() {
         if(exp>= nextLevelExp){
             level++;
@@ -443,11 +495,17 @@ public class Player extends Entity {
                 gp.obj[gp.currentMap][i].use(this);
                 gp.obj[gp.currentMap][i] = null;
             }
+            //obstacle
+            else if(gp.obj[gp.currentMap][i].type == type_obstacle){
+                if(keyH.enterPressed==true){
+                    attackCanceled = true;
+                    gp.obj[gp.currentMap][i].interact();
+                }
+            }
             //pick va add vao inven
             else {
                 String text;
-                if(inventory.size() != maxInventorySize){
-                    inventory.add(gp.obj[gp.currentMap][i]); // them vao inventory!
+                if(canObtainItem(gp.obj[gp.currentMap][i]) == true){
                     gp.playSE(1);
                     text = "Nhận " + gp.obj[gp.currentMap][i].name + "!";
                 }
@@ -459,7 +517,7 @@ public class Player extends Entity {
             }
         }
     }
-    private void interactNPC(int i) {
+    public void interactNPC(int i) {
         if (gp.keyH.enterPressed == true) {
             if (i != 999) {
                 attackCanceled = true;
@@ -467,5 +525,38 @@ public class Player extends Entity {
                 gp.npc[gp.currentMap][i].speak();
             }
         }
+    }
+    public int searchItemInInventory(String itemName){
+        int itemIndex = 999;
+        for(int i=0;i<inventory.size();i++){
+            if(inventory.get(i).name.equals(itemName)){
+                itemIndex = i;
+                break;
+            }
+        }
+        return itemIndex;
+    }
+    public boolean canObtainItem(Entity item){
+        boolean canObtain = false;
+        if(item.stackable==true){
+            int index = searchItemInInventory(item.name);
+            if(index!=999){
+                inventory.get(index).amount++;
+                canObtain = true;
+            }
+            else {
+                if(inventory.size()!=maxInventorySize){
+                    inventory.add(item);
+                    canObtain = true;
+                }
+            }
+        }
+        else {
+            if(inventory.size()!=maxInventorySize){
+                inventory.add(item);
+                canObtain = true;
+            }
+        }
+        return canObtain;
     }
 }

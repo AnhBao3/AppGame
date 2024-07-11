@@ -47,9 +47,37 @@ public class AssetSetter {
         gp.obj[mapNum][i].worldX = gp.tileSize * 40;
         gp.obj[mapNum][i].worldY = gp.tileSize * 8;
         i++;
+        gp.obj[mapNum][i] = new OBJ_Poition_Red(gp);
+        gp.obj[mapNum][i].worldX = gp.tileSize * 40;
+        gp.obj[mapNum][i].worldY = gp.tileSize * 9;
+        i++;
+        gp.obj[mapNum][i] = new OBJ_Poition_Red(gp);
+        gp.obj[mapNum][i].worldX = gp.tileSize * 40;
+        gp.obj[mapNum][i].worldY = gp.tileSize * 10;
+        i++;
         gp.obj[mapNum][i] = new OBJ_Boots(gp);
         gp.obj[mapNum][i].worldX = gp.tileSize * 25;
         gp.obj[mapNum][i].worldY = gp.tileSize * 21;
+        i++;
+        gp.obj[mapNum][i] = new OBJ_Door(gp);
+        gp.obj[mapNum][i].worldX = gp.tileSize * 14;
+        gp.obj[mapNum][i].worldY = gp.tileSize * 28;
+        i++;
+        gp.obj[mapNum][i] = new OBJ_Boots(gp);
+        gp.obj[mapNum][i].worldX = gp.tileSize * 25;
+        gp.obj[mapNum][i].worldY = gp.tileSize * 21;
+        i++;
+        gp.obj[mapNum][i] = new OBJ_Chest(gp,new OBJ_Poition_Red(gp));
+        gp.obj[mapNum][i].worldX = gp.tileSize * 26;
+        gp.obj[mapNum][i].worldY = gp.tileSize * 21;
+        i++;
+        gp.obj[mapNum][i] = new OBJ_Lantern(gp);
+        gp.obj[mapNum][i].worldX = gp.tileSize * 26;
+        gp.obj[mapNum][i].worldY = gp.tileSize * 20;
+        i++;
+        gp.obj[mapNum][i] = new OBJ_Tent(gp);
+        gp.obj[mapNum][i].worldX = gp.tileSize * 27;
+        gp.obj[mapNum][i].worldY = gp.tileSize * 20;
     }
     public void setNPC(){
         int mapNum =0;

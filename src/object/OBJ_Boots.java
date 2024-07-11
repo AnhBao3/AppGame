@@ -29,7 +29,7 @@ public class OBJ_Boots extends Entity {
         value =5;
         down1 = setup("/res/objects/wing_boot",gp.tileSize,gp.tileSize);
     }
-    public void use(Entity e) {
+    public boolean use(Entity e) {
         gp.playSE(1);
         gp.ui.addMessage("+ " + value + " Tốc độ");
         int tempSpeed = gp.player.speed;
@@ -42,5 +42,6 @@ public class OBJ_Boots extends Entity {
                 gp.ui.addMessage("Hết hiệu lực");
             }
         }, 30000);
+        return true;
     }
 }

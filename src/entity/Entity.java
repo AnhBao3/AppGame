@@ -11,6 +11,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Random;
 import javax.imageio.ImageIO;
 
 /**
@@ -44,10 +45,12 @@ public abstract class Entity {
     boolean hpBarOn = false;
     int hpBarCounter;
     public int shotAvailableCounter =0;
+    int knockBackCounter = 0;
 
     //trạng thái người chơi
     public int maxLife;
     public int life;
+    public int defaultSpeed;
     public int speed;
     public String name;
     public int maxMana;
@@ -63,8 +66,11 @@ public abstract class Entity {
     public int coin;
     public Entity currentWeapon;
     public Entity currentSheld;
+    public Entity currentLight;
     public String description ="";
     public Projectile projectile;
+    public boolean onPath = false;
+    public boolean knockBack = false;
 
     //thuoc tinh cua do vat
     public ArrayList<Entity> inventory = new ArrayList<Entity>();
@@ -73,6 +79,10 @@ public abstract class Entity {
     public int defenderValue;
     public int useCost;
     public int price;
+    public int knockBackPower =0;
+    public boolean stackable = false;
+    public int amount = 1;
+    public int lightRadius;
 
     //type
     public int type;
@@ -84,7 +94,26 @@ public abstract class Entity {
     public final int type_shield =5;
     public final int type_consumable =6;
     public final int type_pickupOnly =7;
-
+    public final int type_obstacle = 8;
+    public final int type_light = 9;
+    public int getLeftX(){
+        return worldX+solidArea.x;
+    }
+    public int getRightX(){
+        return worldX+solidArea.x + solidArea.width;
+    }
+    public int getTopY(){
+        return worldY+solidArea.y;
+    }
+    public int getBottomY(){
+        return worldY+solidArea.y+solidArea.height;
+    }
+    public int getCol(){
+        return (worldX+solidArea.x)/gp.tileSize;
+    }
+    public int getRow(){
+        return (worldY+solidArea.y)/gp.tileSize;
+    }
     public Entity(GamePanel gp) {
         this.gp = gp;
     }
@@ -194,7 +223,19 @@ public abstract class Entity {
     public void setAction() {
         // kế thừa trong npc oldman
     }
-
+    public void checkCollision(){
+        collisionOn = false;
+        gp.cChecker.checkTile(this);
+        gp.cChecker.checkObject(this, false);
+        gp.cChecker.checkEntity(this,gp.npc);
+        gp.cChecker.checkEntity(this,gp.monster);
+        gp.cChecker.checkEntity(this,gp.iTile);
+        boolean contactPlayer = gp.cChecker.checkPlayer(this);
+        if(this.type ==type_monster && contactPlayer==true) {
+            //check neu monster tan cong nguoi choi
+            damagePlayer(attack);
+        }
+    }
     public void speak() {
         if (dialogues[dialogueIndex] == null) {
             dialogueIndex = 0;
@@ -216,39 +257,66 @@ public abstract class Entity {
                 break;
         }
     }
-
+    public void interact(){}
     public void update() {
-        setAction();
-        collisionOn = false;
-        gp.cChecker.checkTile(this);
-        gp.cChecker.checkObject(this, false);
-        gp.cChecker.checkEntity(this,gp.npc);
-        gp.cChecker.checkEntity(this,gp.monster);
-        gp.cChecker.checkEntity(this,gp.iTile);
-        boolean contactPlayer = gp.cChecker.checkPlayer(this);
-        if(this.type ==type_monster && contactPlayer==true) {
-            //check neu monster tan cong nguoi choi
-            damagePlayer(attack);
-        }
-        if (collisionOn == false) {
-            switch (direction) {
-                case "up":
-                    worldY -= speed; // nếu ấn W thì sẽ trừ tọa độ x
+        if(knockBack == true){
+            checkCollision();
 
-                    break;
-                case "down":
-                    worldY += speed; // nếu nhấn s thì sẽ cộng tọa độ Y
+            if(collisionOn == true){
+                knockBackCounter = 0;
+                knockBack = false;
+                speed = defaultSpeed;
+            }
+            else if(collisionOn == false){
+                switch (gp.player.direction) {
+                    case "up":
+                        worldY -= speed; // nếu ấn W thì sẽ trừ tọa độ x
 
-                    break;
-                case "left":
-                    worldX -= speed;
+                        break;
+                    case "down":
+                        worldY += speed; // nếu nhấn s thì sẽ cộng tọa độ Y
 
-                    break;
-                case "right":
-                    worldX += speed;
-                    break;
+                        break;
+                    case "left":
+                        worldX -= speed;
+
+                        break;
+                    case "right":
+                        worldX += speed;
+                        break;
+                }
+            }
+            knockBackCounter++;
+            if(knockBackCounter==10){
+                knockBackCounter = 0;
+                knockBack = false;
+                speed = defaultSpeed;
             }
         }
+        else {
+            setAction();
+            checkCollision();
+            if (collisionOn == false) {
+                switch (direction) {
+                    case "up":
+                        worldY -= speed; // nếu ấn W thì sẽ trừ tọa độ x
+
+                        break;
+                    case "down":
+                        worldY += speed; // nếu nhấn s thì sẽ cộng tọa độ Y
+
+                        break;
+                    case "left":
+                        worldX -= speed;
+
+                        break;
+                    case "right":
+                        worldX += speed;
+                        break;
+                }
+            }
+        }
+
         spriteCounter++;
         if (spriteCounter > 35) {
             if (spriteNum == 1) {
@@ -311,5 +379,159 @@ public abstract class Entity {
             gp.player.invincible = true;
         }
     }
-    public void use(Entity entity){}
+    public boolean use(Entity entity){
+        return  false;
+    }
+    public void searchPath(int goalCol, int goalRow){
+        int startCol = (worldX+solidArea.x)/gp.tileSize;
+        int startRow = (worldY+solidArea.y)/gp.tileSize;
+        gp.pFinder.setNodes(startCol,startRow,goalCol,goalRow);
+        if(gp.pFinder.search()==true){
+            int nextX = gp.pFinder.pathList.get(0).col * gp.tileSize;
+            int nextY = gp.pFinder.pathList.get(0).row * gp.tileSize;
+            //entity
+            int enLeftX = worldX+solidArea.x;
+            int enRightX = worldY+solidArea.x + solidArea.width;
+            int enTopY = worldY+solidArea.y;
+            int enBottomY = worldY+solidArea.y + solidArea.height;
+
+            if(enTopY > nextY && enLeftX >= nextX && enRightX < nextX + gp.tileSize) {
+                direction = "up";
+            }
+            else if(enTopY < nextY && enLeftX >= nextX && enRightX < nextX + gp.tileSize) {
+                direction = "down";
+            }
+            else if(enTopY >= nextY && enBottomY < nextY + gp.tileSize) {
+                if(enLeftX > nextX){
+                    direction = "left";
+                }
+                if(enLeftX < nextX){
+                    direction = "right";
+                }
+            }
+            else if(enTopY > nextY && enLeftX > nextX ) {
+                direction = "up";
+                checkCollision();
+                if(collisionOn == true) {
+                    direction = "left";
+                }
+            }
+            else if(enTopY > nextY && enLeftX < nextX ) {
+                direction = "up";
+                checkCollision();
+                if(collisionOn == true) {
+                    direction = "right";
+                }
+            }
+            else if(enTopY< nextY && enLeftX > nextX ) {
+                direction = "down";
+                checkCollision();
+                if(collisionOn == true) {
+                    direction = "left";
+                }
+            }
+            else if(enTopY > nextY && enLeftX < nextX ) {
+                direction = "down";
+                checkCollision();
+                if(collisionOn == true) {
+                    direction = "right";
+                }
+            }
+//            int nextCol = gp.pFinder.pathList.get(0).col;
+//            int nextRow = gp.pFinder.pathList.get(0).row;
+//            if(nextCol == goalCol && nextRow == goalRow){
+//                onPath = false;
+//            }
+        }
+    }
+    public int getDetected(Entity user, Entity target[][],String targetName){
+        int index =999;
+        int nextWorldX  = user.getLeftX();
+        int nextWorldY  = user.getTopY();
+        switch (user.direction) {
+            case "up": nextWorldY = user.getTopY()-1; break;
+            case "down": nextWorldY = user.getBottomY()+1; break;
+            case "left": nextWorldX = user.getLeftX()-1; break;
+            case "right": nextWorldX = user.getRightX()+1; break;
+        }
+        int col = nextWorldX/gp.tileSize;
+        int row = nextWorldY/gp.tileSize;
+
+        for(int i=0;i<target[1].length;i++){
+            if(target[gp.currentMap][i] != null){
+                if(target[gp.currentMap][i].getCol() == col &&
+                target[gp.currentMap][i].getRow() == row &&
+                target[gp.currentMap][i].name.equals(targetName)){
+                   index =i;
+                   break;
+                }
+            }
+        }
+        return index;
+    }
+    public int getXdistance(Entity target){
+        int xDistance = Math.abs(worldX-target.worldX);
+        return xDistance;
+    }
+    public int getYdistance(Entity target){
+        int yDistance = Math.abs(worldY-target.worldY);
+        return yDistance;
+    }
+    public int geTileDistance(Entity target){
+        int tileDistance = (getXdistance(target)+getYdistance(target))/gp.tileSize;
+        return tileDistance;
+    }
+    public int getGoalCol(Entity target){
+        int goalCol = (target.worldX + gp.player.solidArea.x)/gp.tileSize;
+        return goalCol;
+    }
+    public int getGoalRow(Entity target){
+        int goalRow = (target.worldY + gp.player.solidArea.y)/gp.tileSize;
+        return goalRow;
+    }
+    public void checkStopChasingOrNot(Entity target,int distance, int rate){
+        if(geTileDistance(target)>distance){
+            int i = new Random().nextInt(rate);
+            if(i==0){
+                onPath = false;
+            }
+        }
+    }
+    public void getRandomDirection(){
+        actionLockCounter++;
+
+        if (actionLockCounter == 120) {
+            Random random = new Random();
+            int a = 10;
+            int i = random.nextInt(200) + 1; // chọn những con só ngầu nhên từ 1 - 100
+            if (i <= 25-a) {direction = "up";}
+            if (i > 25-a && i <= 50-a) {direction = "down";}
+            if (i > 50-a && i <= 75-a) {direction = "left";}
+            if (i > 75-a && i <= 100-a) {direction = "right";}
+            actionLockCounter = 0;
+            //mỗi 120 khung hình thì nó mới đổi hướng duy chuyển của NPC
+        }
+    }
+    public void checkStartChasingOrNot(Entity target,int distance, int rate){
+        if(geTileDistance(target)<distance){
+            int i = new Random().nextInt(rate);
+            if(i==0){
+                onPath = true;
+            }
+        }
+    }
+    public void checkShootOrNot(int rate, int shotInterval){
+        int i = new Random().nextInt(rate)+1;
+        if(i == 0 && projectile.alive == false && shotAvailableCounter ==shotInterval){
+            projectile.set(worldX,worldY,direction,true,this);
+
+            for(int ii=0;ii<gp.projectile[1].length;ii++){
+                if(gp.projectile[gp.currentMap][ii]==null){
+                    gp.projectile[gp.currentMap][ii] = projectile;
+                    break;
+                }
+            }
+            shotAvailableCounter = 0;
+        }
+    }
 }
