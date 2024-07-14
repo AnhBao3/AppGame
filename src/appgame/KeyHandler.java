@@ -15,7 +15,7 @@ import java.security.Key;
 public class KeyHandler implements KeyListener {
 
     GamePanel gp;
-    public boolean upPressed, downPressed, leftPressed, rightPressed, enterPressed,shotKeyPressed;
+    public boolean upPressed, downPressed, leftPressed, rightPressed, enterPressed,shotKeyPressed, spacePressed;
     boolean checkDrawTime = false;
     boolean showDebugTex =false;
 
@@ -297,6 +297,9 @@ public class KeyHandler implements KeyListener {
                 gp.map.miniMapOn =false;
             }
         }
+        if(code == KeyEvent.VK_SPACE){
+            spacePressed = true;
+        }
 
     }
     public void mapState(int code){
@@ -393,7 +396,13 @@ public class KeyHandler implements KeyListener {
             rightPressed = false;
         }
         if(code == KeyEvent.VK_F){
-            shotKeyPressed =false;
+            shotKeyPressed = false;
+        }
+        if(code == KeyEvent.VK_ENTER){
+            enterPressed = false;
+        }
+        if(code == KeyEvent.VK_SPACE){
+            spacePressed = false;
         }
     }
 }

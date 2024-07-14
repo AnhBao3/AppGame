@@ -43,9 +43,10 @@ public class Player extends Entity {
 //        attackArea.height = 36;
 
         setDefaultValues();
-        getPlayerImage();
-        getPlayerAttackImage();
+        getImage();
+        getAttackImage();
         setItems();
+        getGuardImage();
     }
 
     public void setDefaultValues() {
@@ -94,19 +95,17 @@ public class Player extends Entity {
         inventory.add(currentSheld);
         inventory.add(new OBJ_Key(gp));
     }
-    public void knockBack(Entity entity, int knockBackPower){
-        entity.direction = direction;
-        entity.speed+=knockBackPower;
-        entity.knockBack = true;
-    }
+
     public int getAttack(){
         attackArea = currentWeapon.attackArea;
+        motion1_duration = currentWeapon.motion1_duration;
+        motion2_duration = currentWeapon.motion2_duration;
         return attack = strength * currentWeapon.attackValue;
     }
     public int getDefense(){
         return defense = dexterity * currentSheld.defenderValue;
     }
-    public void getPlayerImage() {
+    public void getImage() {
         //set hình ảnh người chơi
         up1 = setup("/res/player/boy_up_1", gp.tileSize, gp.tileSize);
         up2 = setup("/res/player/boy_up_2", gp.tileSize, gp.tileSize);
@@ -127,7 +126,7 @@ public class Player extends Entity {
         right1 = image;
         right2 = image;
     }
-    public void getPlayerAttackImage() {
+    public void getAttackImage() {
         if(currentWeapon.type == type_sword){
             attackUp1 = setup("/res/player/boy_attack_up_1", gp.tileSize, gp.tileSize * 2);
             attackUp2 = setup("/res/player/boy_attack_up_2", gp.tileSize, gp.tileSize * 2);
@@ -149,9 +148,19 @@ public class Player extends Entity {
           attackRight2 = setup("/res/player/boy_attack_axe_right_2", gp.tileSize * 2, gp.tileSize);
       }
     }
+    public void getGuardImage(){
+        guardUp = setup("/res/player/boy_guard_up_1", gp.tileSize, gp.tileSize * 2);
+        guardDown = setup("/res/player/boy_guard_down_1", gp.tileSize, gp.tileSize * 2);
+        guardLeft = setup("/res/player/boy_guard_left_1", gp.tileSize, gp.tileSize * 2);
+        guardRight = setup("/res/player/boy_guard_right_1", gp.tileSize, gp.tileSize * 2);
+
+    }
     public void update() {
         if (attacking == true) {
             attacking();
+        }
+        else if(keyH.spacePressed == true){
+            guarding = true;
         }
         else if (keyH.upPressed == true || keyH.downPressed == true || keyH.leftPressed == true || keyH.rightPressed == true || keyH.enterPressed == true) {
             if (keyH.upPressed == true) {
@@ -207,6 +216,8 @@ public class Player extends Entity {
             }
             attackCanceled = false;
             gp.keyH.enterPressed = false;
+            guarding = false;
+
             spriteCounter++;
             if (spriteCounter > 10) {
                 if (spriteNum == 1) {
@@ -262,57 +273,7 @@ public class Player extends Entity {
         // trong java X sẽ là đại diện cho đi vào bên phải, và Y là đi xuống
 
     }
-    public void attacking() {
-        spriteCounter++;
-        if (spriteCounter <= 5) {
-            spriteNum = 1;
-        }
-        if (spriteCounter > 5 && spriteCounter <= 25) {
-            spriteNum = 2;
-            //luu lai vi tri worldx, world y, solid area
-            int currentWorldX = worldX;
-            int currentWorldY = worldY;
-            int solidAreaWidth = solidArea.width;
-            int solidAreaHeight = solidArea.height;
-            // dieu chinh vi tri cua nguoi choi truoc khi thay doi
-            switch (direction) {
-                case "up":
-                    worldY -= attackArea.height;
-                    break;
-                case "down":
-                    worldY += attackArea.height;
-                    break;
-                case "left":
-                    worldX -= attackArea.width;
-                    break;
-                case "right":
-                    worldX += attackArea.width;
-                    break;
-            }
-            //attackArea tro thanh solidArea cua nguoi choi
-            solidArea.width = attackArea.width;
-            solidArea.height = attackArea.height;
-            //check va cham voi quai vat sau khi up date vi tri
-            int monsterIndex = gp.cChecker.checkEntity(this, gp.monster);
-            damageMonster(monsterIndex,attack,currentWeapon.knockBackPower);
 
-            int iTileIndex = gp.cChecker.checkEntity(this,gp.iTile);
-            damageInteractiveTile(iTileIndex);
-
-            int projecttileIndex = gp.cChecker.checkEntity(this,gp.projectile);
-            damageProjectile(projecttileIndex);
-
-            worldX = currentWorldX;
-            worldY = currentWorldY;
-            solidArea.width = solidAreaWidth;
-            solidArea.height = solidAreaHeight;
-        }
-        if (spriteCounter > 25) {
-            spriteNum = 1;
-            spriteCounter = 0;
-            attacking = false;
-        }
-    }
 
     public void damageProjectile(int i) {
         if(i!=999){
@@ -335,13 +296,13 @@ public class Player extends Entity {
             }
         }
     }
-    public void damageMonster(int i, int attack,int knockBackPower) {
+    public void damageMonster(int i,Entity attacker, int attack,int knockBackPower) {
         if (i != 999) {
             if(gp.monster[gp.currentMap][i].invincible == false){
                 //dame gay len monster
                 gp.playSE(6);
                 if(knockBackPower>0){
-                    knockBack(gp.monster[gp.currentMap][i],knockBackPower);
+                    setKnockBack(gp.monster[gp.currentMap][i],attacker, knockBackPower);
                 }
                 int damage = attack -gp.monster[gp.currentMap][i].defense;
                 if(damage <0){
@@ -370,7 +331,7 @@ public class Player extends Entity {
             if(selectedItem.type == type_sword || selectedItem.type == type_axe){
                 currentWeapon = selectedItem;
                 attack = getAttack();
-                getPlayerAttackImage();
+                getAttackImage();
             }
             if(selectedItem.type == type_shield){
                 currentSheld = selectedItem;
@@ -426,9 +387,9 @@ public class Player extends Entity {
         }
     }
     public void draw(Graphics2D g2) {
+        BufferedImage image = null;
         int tempScreenX = screenX;
         int tempScreenY = screenY;
-        BufferedImage image = null;
         switch (direction) {
             case "up":
                 if (attacking == false) {

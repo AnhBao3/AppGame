@@ -78,7 +78,7 @@ public class Lighting {
         // chinh sua thoi gian cua ngay o day 600 thi 10s
         if(dayState==day){
             dayCounter++;
-            if(dayCounter>600){
+            if(dayCounter>6000){
                 dayState = dusk;
                 dayCounter = 0;
             }
@@ -92,7 +92,7 @@ public class Lighting {
         }
         if(dayState==night){
             dayCounter++;
-            if(dayCounter>600){
+            if(dayCounter>6000){
                 dayState = dawn;
                 dayCounter = 0;
             }
