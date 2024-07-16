@@ -1,5 +1,6 @@
 package appgame;
 
+import data.Progress;
 import entity.Entity;
 
 import java.awt.*;
@@ -48,9 +49,16 @@ public class EventHandler {
         if(canTouchEvent==true) {
             if (hit(0,27, 16, "right") == true) {damagePit(gp.dialogueState);}
             else if (hit(0,23, 12, "up") == true) {healingPool(gp.dialogueState);}
-            else if (hit(0,10, 39, "any") == true) {teleport(1,12,13);}
-            else if (hit(1,12,13,  "any") == true) {teleport(0,10,39);}
+            else if (hit(0,10, 39, "any") == true) {teleport(1,12,13,gp.indoor);}
+            else if (hit(1,12,13,  "any") == true) {teleport(0,10,39,gp.outside);}
             else if (hit(1,12,9,"up")==true) {speak(gp.npc[1][0]);}
+            else if (hit(0,12,9,"any")==true) {teleport(2,9,41,gp.dungeon);}
+            else if (hit(2,9,41,"any")==true) {teleport(0,12,9,gp.outside);}
+            else if (hit(2,8,7,"any")==true) {teleport(3,26,41,gp.dungeon);}
+            else if (hit(3,26,41,"any")==true) {teleport(2,8,7,gp.dungeon);}
+            else if (hit(3,25,27,"any")==true) {skeletonLord();}
+
+
         }
     }
     //check event xung ??t
@@ -89,15 +97,17 @@ public class EventHandler {
         if(gp.keyH.enterPressed == true){
             gp.gameState = gameState;
             gp.player.attackCanceled = true;
-            gp.ui.currentDialogue = "Uống nước!!!!!!!!!!";
+            gp.ui.currentDialogue = "Uống nước!";
             gp.player.life =gp.player.maxLife;
             gp.player.mana = gp.player.maxMana;
             gp.aSetter.setMonster();
+            gp.saveLoad.save();
         }
         gp.keyH.enterPressed = false;
     }
-    public void teleport(int map, int col, int row){
+    public void teleport(int map, int col, int row,int area){
         gp.gameState = gp.transitionState;
+        gp.nextArea = area;
         tempMap = map;
         tempCol = col;
         tempRow = row;
@@ -109,6 +119,12 @@ public class EventHandler {
             gp.gameState = gp.dialogueState;
             gp.player.attackCanceled = true;
             entity.speak();
+        }
+    }
+    public void skeletonLord(){
+        if(gp.bossBattleOn == false && Progress.skeletonLordDefeated == false){
+            gp.gameState = gp.cutscreneState;
+            gp.csManager.sceneNum = gp.csManager.skeletonLord;
         }
     }
 }

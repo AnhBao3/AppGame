@@ -17,11 +17,12 @@ import javax.imageio.ImageIO;
 public class OBJ_Heart extends Entity {
 
     GamePanel gp;
+    public static final String objName = "Heart";
 
     public OBJ_Heart(GamePanel gp) {
         super(gp);
         this.gp = gp;
-        name = "Heart";
+        name = objName;
         type = type_pickupOnly;
         value =2;
         down1 = setup("/res/objects/full_heart",gp.tileSize,gp.tileSize);

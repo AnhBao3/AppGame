@@ -80,6 +80,7 @@ public class UI {
         //playstate
         if (gp.gameState == gp.playState) {
             drawPlayerLife();
+            drawMonsterLife();
             drawMessage();
         }
         //pauseState
@@ -112,7 +113,59 @@ public class UI {
             drawSleepScreen();
         }
     }
+    public void drawMonsterLife(){
+        //thanh mau monster
+        for(int i=0;i<gp.monster[1].length;i++){
 
+            Entity monster = gp.monster[gp.currentMap][i];
+
+            if(monster!=null && monster.inCamera()==true){
+                if(monster.hpBarOn == true && monster.boss ==false){
+                    double oneScale = (double)gp.tileSize/monster.maxLife; //do dai cua thanh mau vd: mau toi da cua quai la 2 thi no se co 48 pixel va chia mau = 2 se duoc 2 cuc mau
+                    double hpBarValue = oneScale*monster.life;
+                    if(hpBarValue <0){
+                        g2.setColor(new Color(35, 35, 35));
+                        g2.fillRect(monster.getScreenX() - 1, monster.getScreenY() - 16, gp.tileSize + 2, 12);
+                    }
+                    else {
+                        g2.setColor(new Color(35, 35, 35));
+                        g2.fillRect(monster.getScreenX() - 1, monster.getScreenY() - 16, gp.tileSize + 2, 12);
+
+                        g2.setColor(new Color(255, 0, 30));
+                        g2.fillRect(monster.getScreenX(), monster.getScreenY() - 15, (int) hpBarValue, 10);
+                        monster.hpBarCounter++;
+                        if (monster.hpBarCounter > 600) {
+                            monster.hpBarCounter = 0;
+                            monster.hpBarOn = false;
+                        }
+                    }
+                }
+                else if(monster.boss==true) {
+                    double oneScale = (double) gp.tileSize*8 / monster.maxLife; //do dai cua thanh mau vd: mau toi da cua quai la 2 thi no se co 48 pixel va chia mau = 2 se duoc 2 cuc mau
+                    double hpBarValue = oneScale * monster.life;
+
+                    int x = gp.screenWidth/2 - gp.tileSize*4;
+                    int y = gp.tileSize*10;
+
+                    if (hpBarValue < 0) {
+                        g2.setColor(new Color(35, 35, 35));
+                        g2.fillRect(x-1, y-1, gp.tileSize*8 + 2, 22);
+                    } else {
+                        g2.setColor(new Color(35, 35, 35));
+                        g2.fillRect(x-1, y-1, gp.tileSize*8 + 2, 22);
+
+                        g2.setColor(new Color(255, 0, 30));
+                        g2.fillRect(x, y, (int) hpBarValue, 20);
+
+                        g2.setFont(g2.getFont().deriveFont(Font.BOLD,24f));
+                        g2.setColor(Color.white);
+                        g2.drawString(monster.name,x+4,y-10);
+                    }
+                }
+            }
+        }
+
+    }
     public void drawSleepScreen() {
         counter++;
         if(counter<120){
@@ -309,6 +362,7 @@ public class UI {
             gp.player.worldY = gp.tileSize * gp.eHander.tempRow;
             gp.eHander.previousEventX = gp.player.worldX;
             gp.eHander.previousEventY = gp.player.worldY;
+            gp.changeArea();
         }
     }
 
@@ -714,7 +768,7 @@ public class UI {
         }
     }
     public void drawPlayerLife() {
-        
+
         int x = gp.tileSize/2;
         int y = gp.tileSize/2;
         int i = 0;
@@ -723,14 +777,14 @@ public class UI {
             g2.drawImage(heart_blank, x, y,null);
             i++;
             x+= gp.tileSize; // 1 trái tim là 2 mạng
-        }    
+        }
         x = gp.tileSize/2;
         y = gp.tileSize/2;
         i = 0;
-        
+
         //trái tim đày
-        while(i<gp.player.life){        
-            g2.drawImage(heart_half, x, y,null);            
+        while(i<gp.player.life){
+            g2.drawImage(heart_half, x, y,null);
             i++;
             if(i<gp.player.life){
                 g2.drawImage(heart_full,x,y,null);
@@ -946,6 +1000,9 @@ public class UI {
             if(gp.keyH.enterPressed==true) {
                 subState = 0;
                 gp.gameState = gp.titleState;
+                gp.resetGame(true);
+                gp.ui.titleScreenState = 0;
+                gp.stopMusic();
             }
         }
         text ="Không";

@@ -16,16 +16,15 @@ import javax.imageio.ImageIO;
  */
 public class OBJ_Chest extends Entity {
     GamePanel gp;
-    Entity loot;
-    boolean opened = false;
-    public OBJ_Chest(GamePanel gp, Entity loot){
+    public static final String objName = "Chest";
+
+    public OBJ_Chest(GamePanel gp){
         super(gp);
         this.gp = gp;
-        this.loot = loot;
         type = type_obstacle;
         image = setup("/res/objects/chest",gp.tileSize,gp.tileSize);
         image2 = setup("/res/objects/chest_opened",gp.tileSize,gp.tileSize);
-        name = "Chest";
+        name = objName;
         down1 = image;
         collision = true;
 
@@ -36,6 +35,9 @@ public class OBJ_Chest extends Entity {
         solidAreaDefaultX = solidArea.x;
         solidAreaDefaultY = solidArea.y;
 
+    }
+    public void setLoot(Entity loot){
+        this.loot = loot;
     }
     public void interact( ){
         gp.gameState = gp.dialogueState;

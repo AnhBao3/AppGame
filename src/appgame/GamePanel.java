@@ -6,6 +6,7 @@ package appgame;
 
 import ai.PathFinder;
 import com.sun.tools.javac.Main;
+import data.SaveLoad;
 import entity.Entity;
 import entity.Player;
 
@@ -68,6 +69,7 @@ public class GamePanel extends JPanel implements Runnable {
     public PathFinder pFinder = new PathFinder(this);
     EnviromentManager eManager = new EnviromentManager(this);
     Thread gameThread;
+    public EntityGenerator eGenerator = new EntityGenerator(this);
 
     //Thực thể và NPC
     public Player player = new Player(this, keyH);
@@ -81,6 +83,8 @@ public class GamePanel extends JPanel implements Runnable {
     //public ArrayList<Entity> projectileList = new ArrayList<>();
     ArrayList<Entity> entiList = new ArrayList<>();//thực thể lớn
     Map map = new Map(this);
+    SaveLoad saveLoad = new SaveLoad(this);
+    public CutsceneManager csManager = new CutsceneManager(this);
 
 
     //Trạng thái game có thể là đang ở menu, có thể là đang ở trong game
@@ -96,6 +100,15 @@ public class GamePanel extends JPanel implements Runnable {
     public final int tradeState =8;
     public final int sleepState =9;
     public final int mapState =10;
+    public final int cutscreneState =11;
+
+    public boolean bossBattleOn = false;
+
+    public int currentArea;
+    public int nextArea;
+    public final int outside = 50;
+    public final int indoor = 51;
+    public final int dungeon = 52;
 
     public GamePanel() {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
@@ -227,31 +240,34 @@ public class GamePanel extends JPanel implements Runnable {
         aSetter.setMonster();
         aSetter.setInteractiveTile();
         eManager.setup();
+        currentArea = outside;
+        nextArea = outside;
         //set nhạc nền
         gameState = titleState;
-
         tempScreen = new BufferedImage(screenWidth,screenHeight,BufferedImage.TYPE_INT_ARGB);
         g2 = (Graphics2D) tempScreen.getGraphics();
         if(fullScreenOn==true){
             setFullScreen();
         }
     }
-    public void retry(){
+    public void resetGame(boolean restart){
+        currentMap = outside;
+        removeTempEntity();
+        stopMusic();
+        bossBattleOn = false;
         player.setDefaultPostions();
-        player.restoreLifeAndMana();
+        player.restoreStatus();
+        player.resetCounter();
         aSetter.setNPC();
         aSetter.setMonster();
+        if(restart==true){
+            player.setDefaultValues();
+            aSetter.setObject();
+            aSetter.setInteractiveTile();
+            eManager.lighting.resetDay();
+        }
     }
-    public void restart(){
-        player.setDefaultValues();
-        player.setDefaultPostions();
-        player.restoreLifeAndMana();
-        player.setItems();
-        aSetter.setInteractiveTile();
-        aSetter.setObject();
-        aSetter.setNPC();
-        aSetter.setMonster();
-    }
+
     public void drawToTempScreen(){
         long drawStart = 0;
         if(keyH.showDebugTex ==true){
@@ -321,13 +337,12 @@ public class GamePanel extends JPanel implements Runnable {
             //empty entity list
             entiList.clear();
             player.draw(g2);
-            eManager.draw(g2);
             //UI
             //mini map
             map.drawMiniMap(g2);
+            csManager.draw(g2);
+            eManager.draw(g2);
             ui.draw(g2);
-
-
 
             if(keyH.showDebugTex == true){
                 long drawEnd = System.nanoTime();
@@ -341,7 +356,8 @@ public class GamePanel extends JPanel implements Runnable {
                 g2.drawString("WorldY: "+player.worldY,x,y); y+=lineHeight;
                 g2.drawString("Col: "+(player.worldX + player.solidArea.x)/tileSize,x,y); y+=lineHeight;
                 g2.drawString("Row: "+(player.worldY + player.solidArea.y)/tileSize,x,y); y+=lineHeight;
-                g2.drawString("Draw Time: "+passed,x,y);
+                g2.drawString("Draw Time: "+passed,x,y);y+=lineHeight;
+                g2.drawString("God mode: "+keyH.godModeOn,x,y);
             }
         }
 
@@ -375,5 +391,29 @@ public class GamePanel extends JPanel implements Runnable {
         se.setFile(i);
         se.play();
     }
-
+    public void changeArea(){
+        if(nextArea != currentArea){
+            stopMusic();
+            if(nextArea==outside){
+                playMusic(0);
+            }
+            if(nextArea==indoor){
+                playMusic(19);
+            }
+            if(nextArea==dungeon){
+                playMusic(20);
+            }
+        }
+        currentArea = nextArea;
+        aSetter.setMonster();
+    }
+    public void removeTempEntity(){
+        for(int mapNum = 0;mapNum<maxMap;mapNum++){
+            for(int i=0;i<obj[1].length;i++){
+                if(obj[mapNum][i]!=null&&obj[mapNum][i].temp==true){
+                    obj[mapNum][i]=null;
+                }
+            }
+        }
+    }
 }

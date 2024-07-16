@@ -16,10 +16,12 @@ import javax.imageio.ImageIO;
  */
 public class OBJ_Key extends Entity {
     GamePanel gp;
+    public static final String objName = "Chìa khóa";
+
     public OBJ_Key(GamePanel gp){
         super(gp);
         this.gp = gp;
-        name = "Chìa khóa";
+        name = objName;
         down1 = setup("/res/objects/key",gp.tileSize,gp.tileSize);
         description ="["+ name + "]\ndùng để mở cửa";
         price = 50;

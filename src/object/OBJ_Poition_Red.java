@@ -5,16 +5,18 @@ import entity.Entity;
 
 public class OBJ_Poition_Red extends Entity {
     GamePanel gp;
+    public static final String objName = "Bình máu";
+
     public OBJ_Poition_Red(GamePanel gp) {
         super(gp);
         this.gp = gp;
         type = type_consumable;
-        name = "Bình máu";
+        name = objName;
         value = 5;
         down1 = setup("/res/objects/bottle_red",gp.tileSize,gp.tileSize);
         defenderValue = 5;
         description ="["+ name + "]\ndùng để hồi "+ value +" máu";
-        price = 75;
+        price = 5;
         stackable = true;
     }
     public boolean use(Entity e) {

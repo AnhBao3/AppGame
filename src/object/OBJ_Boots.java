@@ -21,11 +21,13 @@ public class OBJ_Boots extends Entity {
     Timer timer;
     TimerTask task;
     int remainingTime;
+    public static final String objName = "Boots";
+
     public OBJ_Boots(GamePanel gp){
         super(gp);
         this.gp = gp;
-        type = type_pickupOnly;
-        name ="";
+        type = type_consumable;
+        name =objName;
         value =5;
         down1 = setup("/res/objects/wing_boot",gp.tileSize,gp.tileSize);
     }

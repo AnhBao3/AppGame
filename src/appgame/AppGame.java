@@ -4,7 +4,9 @@
  */
 package appgame;
 
-import javax.swing.JFrame;
+import com.sun.tools.javac.Main;
+
+import javax.swing.*;
 
 /**
  *
@@ -18,7 +20,6 @@ public class AppGame {
             window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             window.setResizable(false);
             window.setTitle("Phieu Luu Cung Ku An");
-
             GamePanel gamePanel = new GamePanel();
             window.add(gamePanel);
             gamePanel.config.loadconfig();
@@ -34,5 +35,4 @@ public class AppGame {
             gamePanel.setupGame(); 
             gamePanel.StartGameThread();
     }
-    
 }

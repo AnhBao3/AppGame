@@ -32,7 +32,7 @@ public abstract class Entity {
     public int solidAreaDefaultX, solidAreaDefaultY;
     public boolean collisionOn = false;
     public int actionLockCounter = 0;
-    String dialogues[] = new String[20]; //số lượng dialogue có thể có
+    public String dialogues[] = new String[20]; //số lượng dialogue có thể có
     int dialogueIndex = 0;
     public BufferedImage image,image2,image3;
     public boolean invincible = false;
@@ -42,13 +42,20 @@ public abstract class Entity {
     public boolean alive = true;
     public boolean dying = false;
     int dyingCounter = 0;
-    boolean hpBarOn = false;
-    int hpBarCounter;
+    public boolean hpBarOn = false;
+    public int hpBarCounter;
     public int shotAvailableCounter =0;
     int knockBackCounter = 0;
     public Entity attacker;
     public String knockBackDirection;
     public boolean guarding = false;
+    public int guardCounter = 0;
+    int offBalanceCounter =0;
+    public boolean offBalance = false;
+    public Entity linkedEntity;
+    public boolean boss;
+    public boolean temp=false;
+    public boolean drawing =true;
 
     //trạng thái người chơi
     public int maxLife;
@@ -76,6 +83,11 @@ public abstract class Entity {
     public boolean knockBack = false;
     public int motion1_duration;
     public int motion2_duration;
+    public boolean transparent = false;
+    public Entity loot;
+    public boolean opened = false;
+    public boolean inRage = false;
+    public boolean sleep = false;
 
     //thuoc tinh cua do vat
     public ArrayList<Entity> inventory = new ArrayList<Entity>();
@@ -101,6 +113,7 @@ public abstract class Entity {
     public final int type_pickupOnly =7;
     public final int type_obstacle = 8;
     public final int type_light = 9;
+    public final int type_pickaxe = 10;
 
     public int getLeftX(){
         return worldX+solidArea.x;
@@ -120,10 +133,33 @@ public abstract class Entity {
     public int getRow(){
         return (worldY+solidArea.y)/gp.tileSize;
     }
+    public int getCenterX(){
+        int centerX = worldX + left1.getWidth()/2;
+        return centerX;
+    }
+    public int getCenterY(){
+        int centerY = worldY + up1.getHeight()/2;
+        return centerY;
+    }
+    public int getXdistance(Entity target){
+        int xDistance = Math.abs(getCenterX()-target.getCenterX());
+        return xDistance;
+    }
+    public int getYdistance(Entity target){
+        int yDistance = Math.abs(getCenterY()-target.getCenterY());
+        return yDistance;
+    }
+    public int getScreenX(){
+        int screenX = worldX - gp.player.worldX + gp.player.screenX;
+        return screenX;
+    }
+    public int getScreenY(){
+        int screenY = worldY - gp.player.worldY + gp.player.screenY;
+        return screenY;
+    }
     public Entity(GamePanel gp) {
         this.gp = gp;
     }
-
     public BufferedImage setup(String imagePath,int width,int height) {
         UtilityTool uTool = new UtilityTool();
         BufferedImage image = null;
@@ -147,17 +183,23 @@ public abstract class Entity {
         }
     }
     public void damageReaction(){}
+    public boolean inCamera(){
+        boolean inCamera = false;
+        if (worldX + gp.tileSize*5 > gp.player.worldX - gp.player.screenX
+                && worldX - gp.tileSize < gp.player.worldX + gp.player.screenX
+                && worldY + gp.tileSize*5 > gp.player.worldY - gp.player.screenY
+                && worldY - gp.tileSize < gp.player.worldY + gp.player.screenY) {
+            inCamera = true;
+        }
+        return inCamera;
+    }
     public void draw(Graphics2D g2) {
         BufferedImage image = null;
-        int screenX = worldX - gp.player.worldX + gp.player.screenX;
-        int screenY = worldY - gp.player.worldY + gp.player.screenY;
 
-        if (worldX + gp.tileSize > gp.player.worldX - gp.player.screenX
-                && worldX - gp.tileSize < gp.player.worldX + gp.player.screenX
-                && worldY + gp.tileSize > gp.player.worldY - gp.player.screenY
-                && worldY - gp.tileSize < gp.player.worldY + gp.player.screenY) {
-            int tempScreenX = screenX;
-            int tempScreenY = screenY;
+
+        if (inCamera()==true) {
+            int tempScreenX = getScreenX();
+            int tempScreenY = getScreenY();
 
             switch (direction) {
                 case "up":
@@ -166,7 +208,7 @@ public abstract class Entity {
                         if (spriteNum == 2) {image = up2;}
                     }
                     if (attacking == true) {
-                        tempScreenY = screenY - gp.tileSize;
+                        tempScreenY = getScreenY() - up1.getHeight();
                         if (spriteNum == 1) {image = attackUp1;}
                         if (spriteNum == 2) {image = attackUp2;}
                     }
@@ -187,7 +229,7 @@ public abstract class Entity {
                         if (spriteNum == 2) {image = left2;}
                     }
                     if (attacking == true) {
-                        tempScreenX = screenX - gp.tileSize;
+                        tempScreenX = getScreenX() - left1.getWidth();
                         if (spriteNum == 1) {image = attackLeft1;}
                         if (spriteNum == 2) {image = attackLeft2;}
                     }
@@ -212,27 +254,7 @@ public abstract class Entity {
                     break;
             }
 
-            //thanh mau monster
-            if(type ==2 && hpBarOn == true){
-                double oneScale = (double)gp.tileSize/maxLife; //do dai cua thanh mau vd: mau toi da cua quai la 2 thi no se co 48 pixel va chia mau = 2 se duoc 2 cuc mau
-                double hpBarValue = oneScale*life;
-                if(hpBarValue <0){
-                    g2.setColor(new Color(35, 35, 35));
-                    g2.fillRect(screenX - 1, screenY - 16, gp.tileSize + 2, 12);
-                }
-                else {
-                    g2.setColor(new Color(35, 35, 35));
-                    g2.fillRect(screenX - 1, screenY - 16, gp.tileSize + 2, 12);
 
-                    g2.setColor(new Color(255, 0, 30));
-                    g2.fillRect(screenX, screenY - 15, (int) hpBarValue, 10);
-                    hpBarCounter++;
-                    if (hpBarCounter > 600) {
-                        hpBarCounter = 0;
-                        hpBarOn = false;
-                    }
-                }
-            }
 
             if (invincible == true) {
                 hpBarOn = true;
@@ -246,7 +268,6 @@ public abstract class Entity {
             changAlpha(g2,1f);
         }
     }
-
     public void dyingAnimation(Graphics2D g2) {
         dyingCounter++;
         int i =5;
@@ -259,6 +280,19 @@ public abstract class Entity {
         if(dyingCounter>i*6 && dyingCounter <=i*7){changAlpha(g2,0f);}
         if(dyingCounter>i*7 && dyingCounter <=i*8){changAlpha(g2,1f);}
         if(dyingCounter>i*8){alive =false;}
+    }
+    public void setLoot(Entity loot){
+    }
+    public void resetCounter(){
+             int spriteCounter = 0;
+             int actionLockCounter = 0;
+             int invincibleCounter =0;
+            int dyingCounter = 0;
+            int hpBarCounter;
+            int shotAvailableCounter =0;
+            int knockBackCounter = 0;
+            int guardCounter = 0;
+            int offBalanceCounter =0;
     }
     public void changAlpha(Graphics2D g2, float alphaValue){
         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alphaValue));
@@ -302,85 +336,95 @@ public abstract class Entity {
     }
     public void interact(){}
     public void update() {
-        if(knockBack == true){
-            checkCollision();
+        if(sleep ==false){
+            if(knockBack == true){
+                checkCollision();
 
-            if(collisionOn == true){
-                knockBackCounter = 0;
-                knockBack = false;
-                speed = defaultSpeed;
-            }
-            else if(collisionOn == false){
-                switch (knockBackDirection) {
-                    case "up":
-                        worldY -= speed; // nếu ấn W thì sẽ trừ tọa độ x
+                if(collisionOn == true){
+                    knockBackCounter = 0;
+                    knockBack = false;
+                    speed = defaultSpeed;
+                }
+                else if(collisionOn == false){
+                    switch (knockBackDirection) {
+                        case "up":
+                            worldY -= speed; // nếu ấn W thì sẽ trừ tọa độ x
 
-                        break;
-                    case "down":
-                        worldY += speed; // nếu nhấn s thì sẽ cộng tọa độ Y
+                            break;
+                        case "down":
+                            worldY += speed; // nếu nhấn s thì sẽ cộng tọa độ Y
 
-                        break;
-                    case "left":
-                        worldX -= speed;
+                            break;
+                        case "left":
+                            worldX -= speed;
 
-                        break;
-                    case "right":
-                        worldX += speed;
-                        break;
+                            break;
+                        case "right":
+                            worldX += speed;
+                            break;
+                    }
+                }
+                knockBackCounter++;
+                if(knockBackCounter==10){
+                    knockBackCounter = 0;
+                    knockBack = false;
+                    speed = defaultSpeed;
                 }
             }
-            knockBackCounter++;
-            if(knockBackCounter==10){
-                knockBackCounter = 0;
-                knockBack = false;
-                speed = defaultSpeed;
+            else if(attacking==true){
+                attacking();
             }
-        }
-        else if(attacking==true){
-            attacking();
-        }
-        else {
-            setAction();
-            checkCollision();
-            if (collisionOn == false) {
-                switch (direction) {
-                    case "up":
-                        worldY -= speed; // nếu ấn W thì sẽ trừ tọa độ x
+            else {
+                setAction();
+                checkCollision();
+                if (collisionOn == false) {
+                    switch (direction) {
+                        case "up":
+                            worldY -= speed; // nếu ấn W thì sẽ trừ tọa độ x
 
-                        break;
-                    case "down":
-                        worldY += speed; // nếu nhấn s thì sẽ cộng tọa độ Y
+                            break;
+                        case "down":
+                            worldY += speed; // nếu nhấn s thì sẽ cộng tọa độ Y
 
-                        break;
-                    case "left":
-                        worldX -= speed;
+                            break;
+                        case "left":
+                            worldX -= speed;
 
-                        break;
-                    case "right":
-                        worldX += speed;
-                        break;
+                            break;
+                        case "right":
+                            worldX += speed;
+                            break;
+                    }
+                }
+                spriteCounter++;
+                if (spriteCounter > 35) {
+                    if (spriteNum == 1) {
+                        spriteNum = 2;
+                    } else if (spriteNum == 2) {
+                        spriteNum = 1;
+                    }
+                    spriteCounter = 0;
                 }
             }
-            spriteCounter++;
-            if (spriteCounter > 35) {
-                if (spriteNum == 1) {
-                    spriteNum = 2;
-                } else if (spriteNum == 2) {
-                    spriteNum = 1;
+            if (invincible == true) {
+                invincibleCounter++;
+                if (invincibleCounter > 40) {
+                    invincible = false;
+                    invincibleCounter = 0;
                 }
-                spriteCounter = 0;
+            }
+            if(shotAvailableCounter < 30){
+                shotAvailableCounter++;
+            }
+            if(offBalance == true){
+                offBalanceCounter++;
+                if(offBalanceCounter>60){
+                    offBalance = false;
+                    offBalanceCounter = 0;
+                }
             }
         }
-        if (invincible == true) {
-            invincibleCounter++;
-            if (invincibleCounter > 40) {
-                invincible = false;
-                invincibleCounter = 0;
-            }
-        }
-        if(shotAvailableCounter < 30){
-            shotAvailableCounter++;
-        }
+
     }
     public Color getParticleColor(){
         Color color = null;
@@ -474,11 +518,33 @@ public abstract class Entity {
     public void damagePlayer(int attack){
         if(gp.player.invincible ==false){
             //gay dame
-            gp.playSE(7);
             int damage = attack -gp.player.defense;
-            if(damage <0){
-                damage = 0;
+
+            String canGuardDirection = getOppositeDirection(direction);
+            if(gp.player.guarding==true&&gp.player.direction.equals(canGuardDirection)){
+                if(gp.player.guardCounter<10){
+                    damage = 0;
+                    gp.playSE(18);
+                    setKnockBack(this,gp.player,knockBackPower);
+                    offBalance = true;
+                    spriteCounter =- 60;
+                }
+                else {
+                    damage /= 3;
+                    gp.playSE(17);
+                }
             }
+            else {
+                gp.playSE(7);
+                if(damage <1){
+                    damage = 1;
+                }
+            }
+            if(damage!=0){
+                gp.player.transparent = true;
+                setKnockBack(gp.player,this,knockBackPower);
+            }
+
             gp.player.life -= damage;
             gp.player.invincible = true;
         }
@@ -489,22 +555,22 @@ public abstract class Entity {
         int yDis = getYdistance(gp.player);
         switch (direction){
             case"up":
-                if(gp.player.worldY < worldY && yDis < straight && xDis < holizontal){
+                if(gp.player.getCenterY() < getCenterY() && yDis < straight && xDis < holizontal){
                     targetInRange = true;
                 }
                 break;
             case"down":
-                if(gp.player.worldY > worldY && yDis < straight && xDis < holizontal){
+                if(gp.player.getCenterY() > getCenterY() && yDis < straight && xDis < holizontal){
                     targetInRange = true;
                 }
                 break;
             case"left":
-                if(gp.player.worldX < worldX && xDis < straight && yDis < holizontal){
+                if(gp.player.getCenterX() < getCenterX() && xDis < straight && yDis < holizontal){
                     targetInRange = true;
                 }
                 break;
             case"right":
-                if(gp.player.worldX > worldX && xDis < straight && yDis < holizontal){
+                if(gp.player.getCenterX() > getCenterX() && xDis < straight && yDis < holizontal){
                     targetInRange = true;
                 }
                 break;
@@ -595,10 +661,10 @@ public abstract class Entity {
         int nextWorldX  = user.getLeftX();
         int nextWorldY  = user.getTopY();
         switch (user.direction) {
-            case "up": nextWorldY = user.getTopY()-1; break;
-            case "down": nextWorldY = user.getBottomY()+1; break;
-            case "left": nextWorldX = user.getLeftX()-1; break;
-            case "right": nextWorldX = user.getRightX()+1; break;
+            case "up": nextWorldY = user.getTopY()-gp.player.speed; break;
+            case "down": nextWorldY = user.getBottomY()+gp.player.speed; break;
+            case "left": nextWorldX = user.getLeftX()-gp.player.speed; break;
+            case "right": nextWorldX = user.getRightX()+gp.player.speed; break;
         }
         int col = nextWorldX/gp.tileSize;
         int row = nextWorldY/gp.tileSize;
@@ -615,15 +681,7 @@ public abstract class Entity {
         }
         return index;
     }
-    public int getXdistance(Entity target){
-        int xDistance = Math.abs(worldX-target.worldX);
-        return xDistance;
-    }
-    public int getYdistance(Entity target){
-        int yDistance = Math.abs(worldY-target.worldY);
-        return yDistance;
-    }
-    public int geTileDistance(Entity target){
+    public int getTileDistance(Entity target){
         int tileDistance = (getXdistance(target)+getYdistance(target))/gp.tileSize;
         return tileDistance;
     }
@@ -636,17 +694,17 @@ public abstract class Entity {
         return goalRow;
     }
     public void checkStopChasingOrNot(Entity target,int distance, int rate){
-        if(geTileDistance(target)>distance){
+        if(getTileDistance(target)>distance){
             int i = new Random().nextInt(rate);
             if(i==0){
                 onPath = true;
             }
         }
     }
-    public void getRandomDirection(){
+    public void getRandomDirection(int interval){
         actionLockCounter++;
 
-        if (actionLockCounter == 120) {
+        if (actionLockCounter == interval) {
             Random random = new Random();
             int a = 10;
             int i = random.nextInt(200) + 1; // chọn những con só ngầu nhên từ 1 - 100
@@ -659,25 +717,63 @@ public abstract class Entity {
         }
     }
     public void checkStartChasingOrNot(Entity target,int distance, int rate){
-        if(geTileDistance(target)<distance){
+        if(getTileDistance(target)<distance){
             int i = new Random().nextInt(rate);
             if(i==0){
                 onPath = true;
             }
         }
     }
-    public void checkShootOrNot(int rate, int shotInterval){
-        int i = new Random().nextInt(rate)+1;
-        if(i == 0 && projectile.alive == false && shotAvailableCounter ==shotInterval){
-            projectile.set(worldX,worldY,direction,true,this);
-
-            for(int ii=0;ii<gp.projectile[1].length;ii++){
-                if(gp.projectile[gp.currentMap][ii]==null){
+    public void checkShootOrNot(int rate, int shotInterval) {
+        int i = new Random().nextInt(rate);
+        if (i == 0 && projectile.alive == false && shotAvailableCounter >= shotInterval) {
+            projectile.set(worldX, worldY, direction, true, this);
+            for (int ii = 0; ii < gp.projectile[gp.currentMap].length; ii++) {
+                if (gp.projectile[gp.currentMap][ii] == null) {
                     gp.projectile[gp.currentMap][ii] = projectile;
                     break;
                 }
             }
             shotAvailableCounter = 0;
+        }
+    }
+    public String getOppositeDirection(String direction){
+        String oppositeDirection ="";
+        switch (direction) {
+            case "up":
+                oppositeDirection = "down";
+                break;
+            case "down":
+                oppositeDirection = "up";
+                break;
+            case "left":
+                oppositeDirection = "right";
+                break;
+            case "right":
+                oppositeDirection = "left";
+                break;
+        }
+        return oppositeDirection;
+    }
+    public void move(String direction){}
+    public void moveTowardPlayer(int interval){
+        actionLockCounter++;
+        if(actionLockCounter > interval){
+            if(getXdistance(gp.player)>getYdistance(gp.player)){
+                if(gp.player.getCenterX()<getCenterX()){
+                    direction = "left";
+                } else {
+                    direction = "right";
+                }
+            }
+            else if(getXdistance(gp.player)<getYdistance(gp.player)){
+                if(gp.player.getCenterX()<getCenterX()){
+                    direction = "up";
+                } else {
+                    direction = "down";
+                }
+            }
+            actionLockCounter = 0;
         }
     }
 }

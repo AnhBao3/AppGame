@@ -7,11 +7,13 @@ import entity.Projectile;
 import java.awt.*;
 
 public class OBJ_Slime extends Projectile {
+    public static final String objName = "Chất nhờn";
+
     GamePanel gp;
     public OBJ_Slime(GamePanel gp) {
         super(gp);
         this.gp = gp;
-        name ="Chất nhờn";
+        name =objName;
         speed = 8;
         maxLife = 80;
         life = maxLife;

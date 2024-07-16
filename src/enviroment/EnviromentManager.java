@@ -13,6 +13,7 @@ public class EnviromentManager {
     public void setup(){
         lighting = new Lighting(gp);
     }
+
     public void update(){
         lighting.update();
     }

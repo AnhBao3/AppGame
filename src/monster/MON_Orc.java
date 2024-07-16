@@ -18,11 +18,12 @@ public class MON_Orc extends Entity {
         name = "Orc";
         defaultSpeed = 1;
         speed = defaultSpeed;
-        maxLife =15;
+        maxLife =2000;
         life = maxLife;
         attack = 8;
         defense =2;
         exp = 10;
+        knockBackPower = 5;
 
         solidArea.x = 4;
         solidArea.y = 4;
@@ -67,7 +68,7 @@ public class MON_Orc extends Entity {
             searchPath(getGoalCol(gp.player),getGoalRow(gp.player));
         } else {
             checkStartChasingOrNot(gp.player,5,100);
-            getRandomDirection();
+            getRandomDirection(120);
         }
         if(attacking == false){
             checkAttackOrNot(30,gp.tileSize*4,gp.tileSize);

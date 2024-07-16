@@ -19,9 +19,9 @@ public class MON_GreenSlime extends Entity {
         name = "Zac chất nhờn";
         defaultSpeed = 1;
         speed = defaultSpeed;
-        maxLife = 5;
+        maxLife = 25;
         life = maxLife;
-        attack = 5;
+        attack = 2;
         defense =0;
         exp = 2;
         projectile = new OBJ_Slime(gp);
@@ -55,7 +55,7 @@ public class MON_GreenSlime extends Entity {
             checkShootOrNot(200,30);
         } else {
             checkStartChasingOrNot(gp.player,5,100);
-            getRandomDirection();
+            getRandomDirection(120);
         }
     }
     public void damageReaction(){

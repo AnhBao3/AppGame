@@ -80,9 +80,6 @@ public class NPC_OldMan extends Entity {
     public void setDialogue() {
         //mãng chứa thông báo
         dialogues[0] = "Em Chao co";
-        dialogues[1] = "demo2";
-        dialogues[2] = "demo3";
-        dialogues[3] = "demo4";
 
     }
 

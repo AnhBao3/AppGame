@@ -18,6 +18,7 @@ public class KeyHandler implements KeyListener {
     public boolean upPressed, downPressed, leftPressed, rightPressed, enterPressed,shotKeyPressed, spacePressed;
     boolean checkDrawTime = false;
     boolean showDebugTex =false;
+    public boolean godModeOn = false;
 
     public KeyHandler(GamePanel gp) {
         this.gp = gp;
@@ -110,12 +111,13 @@ public class KeyHandler implements KeyListener {
         if(code == KeyEvent.VK_ENTER) {
             if(gp.ui.commandNum==0){
                 gp.gameState = gp.playState;
-                gp.retry();
+                gp.resetGame(false);
                 gp.playMusic(0);
+
             }
             else if(gp.ui.commandNum==1){
                 gp.gameState = gp.titleState;
-                gp.restart();
+                gp.resetGame(true);
             }
         }
     }
@@ -196,7 +198,9 @@ public class KeyHandler implements KeyListener {
 
                 }
                 if (gp.ui.commandNum == 1) {
-
+                    gp.saveLoad.load();
+                    gp.gameState = gp.playState;
+                    gp.playMusic(0);
                 }
                 if (gp.ui.commandNum == 2) {
                     System.exit(0);
@@ -300,7 +304,14 @@ public class KeyHandler implements KeyListener {
         if(code == KeyEvent.VK_SPACE){
             spacePressed = true;
         }
-
+        if(code == KeyEvent.VK_G){
+            if(godModeOn == false){
+                godModeOn =true;
+            }
+            else if(godModeOn == true){
+                godModeOn = false;
+            }
+        }
     }
     public void mapState(int code){
         if(code == KeyEvent.VK_M){

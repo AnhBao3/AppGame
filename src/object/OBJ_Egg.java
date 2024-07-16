@@ -8,15 +8,17 @@ import java.awt.*;
 
 public class OBJ_Egg extends Projectile {
     GamePanel gp;
+    public static final String objName = "Trứng gà";
+
     public OBJ_Egg(GamePanel gp) {
         super(gp);
         this.gp = gp;
 
-        name ="Trứng gà";
+        name =objName;
         speed = 5;
         maxLife = 80;
         life = maxLife;
-        attack =2;
+        attack =1;
         useCost = 1;
         alive =false;
         knockBackPower = 5;

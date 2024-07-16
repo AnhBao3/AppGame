@@ -27,6 +27,9 @@ public class TileManager {
         getTileImage();
         loadMap("/res/maps/worldV3.txt",0);
         loadMap("/res/maps/interior01.txt",1);// chỉnh file world
+        loadMap("/res/maps/dungeon01.txt",2);
+        loadMap("/res/maps/dungeon02.txt",3);
+
     }
 
     public void getTileImage() {
@@ -104,6 +107,9 @@ public class TileManager {
             setup(67,"067",false);
             setup(68,"068",false);
             setup(69,"069",true);
+            setup(70,"070",false);
+            setup(71,"071",false);
+
     }
 public void setup(int index,String imageName, boolean collision){
     UtilityTool uTool = new UtilityTool();
