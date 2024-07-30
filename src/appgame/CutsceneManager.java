@@ -38,7 +38,7 @@ public class CutsceneManager {
                 if (gp.obj[gp.currentMap][i] == null) {
                     gp.obj[gp.currentMap][i] = new OBJ_Door_Iron(gp);
                     gp.obj[gp.currentMap][i].worldX = gp.tileSize * 25;
-                    gp.obj[gp.currentMap][i].worldY = gp.tileSize * 28;
+                    gp.obj[gp.currentMap][i].worldY = gp.tileSize * 25;
                     gp.obj[gp.currentMap][i].temp = true;
                     gp.playSE(22);
                     break;

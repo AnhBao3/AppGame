@@ -17,7 +17,7 @@ public class OBJ_Sword_Normal extends Entity {
         description ="["+ name + "]\nmột thanh kiếm đã cũ";
         price = 50;
         knockBackPower = 2;
-        motion1_duration =5;
-        motion2_duration =10;
+        motion1_duration =10;
+        motion2_duration =20;
     }
 }

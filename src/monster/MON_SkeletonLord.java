@@ -21,7 +21,7 @@ public class MON_SkeletonLord extends Entity {
         name = monName;
         defaultSpeed = 1;
         speed = defaultSpeed;
-        maxLife =5000;
+        maxLife =1000;
         life = maxLife;
         attack = 10;
         defense =2;

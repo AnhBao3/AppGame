@@ -18,7 +18,7 @@ public class MON_Orc extends Entity {
         name = "Orc";
         defaultSpeed = 1;
         speed = defaultSpeed;
-        maxLife =2000;
+        maxLife =500;
         life = maxLife;
         attack = 8;
         defense =2;

@@ -75,47 +75,47 @@ public class Lighting {
         fillterAlpha = 0f;
     }
     public void update(){
-        if(gp.player.lightUpdated == true){
-            setLightSource();
-            gp.player.lightUpdated = false;
-        }
-        // chinh sua thoi gian cua ngay o day 600 thi 10s
-        if(dayState==day){
-            dayCounter++;
-            if(dayCounter>6000){
-                dayState = dusk;
-                dayCounter = 0;
+            if(gp.player.lightUpdated == true){
+                setLightSource();
+                gp.player.lightUpdated = false;
             }
-        }
-        if(dayState==dusk){
-            fillterAlpha += 0.001f;
-            if(fillterAlpha>1f){
-                fillterAlpha = 1f;
-                dayState = night;
+            // chinh sua thoi gian cua ngay o day 600 thi 10s
+            if(dayState==day){
+                dayCounter++;
+                if(dayCounter>6000){
+                    dayState = dusk;
+                    dayCounter = 0;
+                }
             }
-        }
-        if(dayState==night){
-            dayCounter++;
-            if(dayCounter>6000){
-                dayState = dawn;
-                dayCounter = 0;
+            if(dayState==dusk){
+                fillterAlpha += 0.001f;
+                if(fillterAlpha>1f){
+                    fillterAlpha = 1f;
+                    dayState = night;
+                }
             }
-        }
-        if(dayState==dawn){
-            fillterAlpha -= 0.001f;
+            if(dayState==night){
+                dayCounter++;
+                if(dayCounter>6000){
+                    dayState = dawn;
+                    dayCounter = 0;
+                }
+            }
+            if(dayState==dawn){
+                fillterAlpha -= 0.001f;
 
-            if(fillterAlpha<0f){
-                fillterAlpha = 0;
-                dayState = day;
+                if(fillterAlpha<0f){
+                    fillterAlpha = 0;
+                    dayState = day;
+                }
             }
-        }
     }
     public void draw(Graphics2D g2) {
         if(gp.currentArea==gp.outside){
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, fillterAlpha));
 
         }
-        if(gp.currentArea==gp.outside || gp.currentArea==gp.dungeon){
+        if(gp.currentArea==gp.outside||gp.currentArea==gp.dungeon){
             g2.drawImage(darknessFilter,0,0,null);
         }
         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));

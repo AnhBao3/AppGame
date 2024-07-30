@@ -85,6 +85,7 @@ public class GamePanel extends JPanel implements Runnable {
     Map map = new Map(this);
     SaveLoad saveLoad = new SaveLoad(this);
     public CutsceneManager csManager = new CutsceneManager(this);
+    public boolean dungeonOn = false;
 
 
     //Trạng thái game có thể là đang ở menu, có thể là đang ở trong game

@@ -515,40 +515,41 @@ public abstract class Entity {
             attacking = false;
         }
     }
-    public void damagePlayer(int attack){
-        if(gp.player.invincible ==false){
-            //gay dame
-            int damage = attack -gp.player.defense;
+    public void damagePlayer(int attack) {
+        if (gp.player.invincible == false) {
+            // Calculate damage
+            int damage = attack - gp.player.defense;
 
+            // Check if the player is guarding and facing the opposite direction
             String canGuardDirection = getOppositeDirection(direction);
-            if(gp.player.guarding==true&&gp.player.direction.equals(canGuardDirection)){
-                if(gp.player.guardCounter<10){
-                    damage = 0;
+            if (gp.player.guarding == true && gp.player.direction.equals(canGuardDirection)) {
+                if (gp.player.guardCounter < 10) {
+                    damage = 0; // No damage if guarding successfully
                     gp.playSE(18);
-                    setKnockBack(this,gp.player,knockBackPower);
+                    setKnockBack(this, gp.player, knockBackPower);
                     offBalance = true;
-                    spriteCounter =- 60;
-                }
-                else {
-                    damage /= 3;
+                    spriteCounter = -60;
+                } else {
+                    damage = (attack - gp.player.defense) / 2; // Reduce damage when guarding but guardCounter is high
                     gp.playSE(17);
                 }
-            }
-            else {
+            } else {
                 gp.playSE(7);
-                if(damage <1){
-                    damage = 1;
+                if (damage < 1) {
+                    damage = 1; // Ensure a minimum of 1 damage if not guarding
                 }
             }
-            if(damage!=0){
+
+            if (damage != 0) {
                 gp.player.transparent = true;
-                setKnockBack(gp.player,this,knockBackPower);
+                setKnockBack(gp.player, this, knockBackPower);
             }
 
-            gp.player.life -= damage;
-            gp.player.invincible = true;
+            gp.player.life -= damage; // Subtract damage from player's life
+            gp.player.invincible = true; // Make the player invincible for a short period
         }
     }
+
     public void checkAttackOrNot(int rate, int straight, int holizontal){
         boolean targetInRange =false;
         int xDis = getXdistance(gp.player);

@@ -53,6 +53,7 @@ public class Player extends Entity {
         speed = defaultSpeed;
         direction = "down";
 
+
         //trạng thái người chơi
         level = 1;
         maxLife = 10;
@@ -80,10 +81,19 @@ public class Player extends Entity {
         getGuardImage();
     }
     public void setDefaultPostions(){
-        gp.currentMap =0;
-        worldX = gp.tileSize * 23;
-        worldY = gp.tileSize * 21;
-        direction = "down";
+        if(gp.dungeonOn==true){
+            gp.currentMap =2;
+            worldX = gp.tileSize * 9;
+            worldY = gp.tileSize * 40;
+            direction = "down";
+        }
+        else if(gp.dungeonOn==false){
+            gp.currentMap =0;
+            worldX = gp.tileSize * 23;
+            worldY = gp.tileSize * 21;
+            direction = "down";
+        }
+
     }
     public void restoreStatus(){
         life = maxLife;
@@ -100,6 +110,8 @@ public class Player extends Entity {
         inventory.clear();
         inventory.add(currentWeapon);
         inventory.add(currentSheld);
+        inventory.add(new OBJ_Key(gp));
+        inventory.add(new OBJ_Lantern(gp));
     }
     public int getAttack(){
         attackArea = currentWeapon.attackArea;

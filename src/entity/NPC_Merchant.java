@@ -42,6 +42,7 @@ public class NPC_Merchant extends Entity {
         inventory.add(new OBJ_Poition_Red(gp));
         inventory.add(new OBJ_Lantern(gp));
         inventory.add(new OBJ_Shield_Blue(gp));
+        inventory.add(new OBJ_Tent(gp));
     }
     public void speak(){
         super.speak();

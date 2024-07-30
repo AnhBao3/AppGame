@@ -49,13 +49,13 @@ public class EventHandler {
         if(canTouchEvent==true) {
             if (hit(0,27, 16, "right") == true) {damagePit(gp.dialogueState);}
             else if (hit(0,23, 12, "up") == true) {healingPool(gp.dialogueState);}
-            else if (hit(0,10, 39, "any") == true) {teleport(1,12,13,gp.indoor);}
-            else if (hit(1,12,13,  "any") == true) {teleport(0,10,39,gp.outside);}
+            else if (hit(0,10, 39, "any") == true) {teleport(1,12,13,gp.indoor,true);}
+            else if (hit(1,12,13,  "any") == true) {teleport(0,10,39,gp.outside,false);}
             else if (hit(1,12,9,"up")==true) {speak(gp.npc[1][0]);}
-            else if (hit(0,12,9,"any")==true) {teleport(2,9,41,gp.dungeon);}
-            else if (hit(2,9,41,"any")==true) {teleport(0,12,9,gp.outside);}
-            else if (hit(2,8,7,"any")==true) {teleport(3,26,41,gp.dungeon);}
-            else if (hit(3,26,41,"any")==true) {teleport(2,8,7,gp.dungeon);}
+            else if (hit(0,12,9,"any")==true) {teleport(2,9,41,gp.dungeon,true);}
+            else if (hit(2,9,41,"any")==true) {teleport(0,12,9,gp.outside,false);}
+            else if (hit(2,8,7,"any")==true) {teleport(3,26,41,gp.dungeon,true);}
+            else if (hit(3,26,41,"any")==true) {teleport(2,8,7,gp.dungeon,true);}
             else if (hit(3,25,27,"any")==true) {skeletonLord();}
 
 
@@ -105,8 +105,9 @@ public class EventHandler {
         }
         gp.keyH.enterPressed = false;
     }
-    public void teleport(int map, int col, int row,int area){
+    public void teleport(int map, int col, int row,int area,boolean tf){
         gp.gameState = gp.transitionState;
+        gp.dungeonOn = tf;
         gp.nextArea = area;
         tempMap = map;
         tempCol = col;
